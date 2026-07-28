@@ -928,6 +928,39 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .eco p{margin:0;font-size:12.5px;color:var(--ink-2)}
   .eco .gain{margin-top:auto;padding-top:12px;border-top:1px solid var(--grid);font-size:12px;color:var(--success-text)}
 
+  /* ---------- panneau trajet ---------- */
+  .trip-row{display:grid;grid-template-columns:1fr auto 1fr 1fr;gap:18px 20px;align-items:end}
+  @media(max-width:940px){.trip-row{grid-template-columns:1fr;gap:16px}.swap{justify-self:start}}
+  .fld{display:flex;flex-direction:column;gap:8px;min-width:0}
+  .ac{position:relative}
+  .ac input{width:100%;border:1px solid var(--border);background:var(--surface-1);color:var(--ink);
+    font-family:var(--fd);font-size:16px;padding:9px 12px}
+  .ac input:focus{outline:1px solid var(--s1);outline-offset:2px}
+  .sugg{position:absolute;z-index:20;top:100%;left:0;right:0;margin:2px 0 0;padding:0;list-style:none;
+    background:var(--surface-1);border:1px solid var(--border-strong);max-height:230px;overflow:auto;display:none;
+    box-shadow:0 10px 28px rgba(27,26,23,.18)}
+  .sugg.open{display:block}
+  .sugg li{padding:8px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--grid);color:var(--ink-2)}
+  .sugg li:last-child{border-bottom:0}
+  .sugg li:hover,.sugg li[aria-selected="true"]{background:var(--wash);color:var(--ink)}
+  .swap{align-self:end;margin-bottom:6px;background:none;border:1px solid var(--border);color:var(--ink-2);
+    width:34px;height:34px;font-size:15px;cursor:pointer;flex:0 0 auto}
+  .swap:hover{border-color:var(--ink);color:var(--ink)}
+  .trip-actions{display:flex;flex-wrap:wrap;gap:16px 20px;align-items:center;margin-top:20px;
+    padding-top:18px;border-top:1px solid var(--grid)}
+  .btn-primary{background:var(--ink);color:var(--surface-1);border:1px solid var(--ink);
+    font-family:var(--fu);font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    padding:10px 20px;cursor:pointer}
+  .btn-primary:hover{background:var(--seal);border-color:var(--seal)}
+  .btn-primary[disabled]{opacity:.45;cursor:default}
+  #tripStatus{font-size:12px;color:var(--muted)}
+  #tripStatus.err{color:var(--seal)}
+  .trip-note{font-size:11.5px;color:var(--muted);margin:14px 0 0}
+  .home-btn{background:none;border:0;padding:0;font-family:var(--fu);font-size:10px;letter-spacing:.13em;
+    text-transform:uppercase;color:var(--muted);cursor:pointer;text-align:left;border-bottom:1px solid var(--border);
+    align-self:flex-start;padding-bottom:2px}
+  .home-btn:hover{color:var(--ink);border-color:var(--ink)}
+
   /* ---------- seuil de rentabilité ---------- */
   .be-ctl{display:flex;align-items:center;gap:16px;margin:6px 0 22px;flex-wrap:wrap}
   .be-ctl input[type=range]{flex:1 1 260px;max-width:420px;accent-color:var(--s1);height:2px}
@@ -991,11 +1024,42 @@ svg.leaflet-image-layer.leaflet-interactive path {
       </div>
     </div>
     <div class="seal">
-      <span class="box"><span class="k1">推奨</span><span class="k2">C案</span></span>
+      <span class="box"><span class="k1">推奨</span><span class="k2" id="sealOpt">C案</span></span>
       <span class="cap">Option retenue</span>
       <button class="theme-btn" id="themeBtn" type="button">Thème : auto</button>
     </div>
   </header>
+
+  <!-- ============ TRAJET ============ -->
+  <section id="secTrip">
+    <h2><span class="kj">出発</span><span class="tx">Départ &amp; arrivée</span></h2>
+    <div class="card">
+      <div class="trip-row">
+        <div class="fld">
+          <span class="lg">Départ</span>
+          <div class="ac"><input id="inFrom" type="text" autocomplete="off" placeholder="Adresse, ville…"><ul class="sugg" id="sgFrom"></ul></div>
+          <button class="home-btn" type="button" data-fill="from">⌂ Utiliser le domicile</button>
+        </div>
+        <button class="swap" id="btnSwap" type="button" title="Inverser départ et arrivée" aria-label="Inverser départ et arrivée">⇅</button>
+        <div class="fld">
+          <span class="lg">Arrivée</span>
+          <div class="ac"><input id="inTo" type="text" autocomplete="off" placeholder="Adresse, ville…"><ul class="sugg" id="sgTo"></ul></div>
+          <button class="home-btn" type="button" data-fill="to">⌂ Utiliser le domicile</button>
+        </div>
+        <div class="fld">
+          <span class="lg">Domicile</span>
+          <div class="ac"><input id="inHome" type="text" autocomplete="off" placeholder="Votre adresse"><ul class="sugg" id="sgHome"></ul></div>
+          <button class="home-btn" type="button" id="btnCopyLink">Copier le lien avec le domicile</button>
+        </div>
+      </div>
+      <div class="trip-actions">
+        <button class="btn-primary" id="btnGo" type="button">Calculer les itinéraires</button>
+        <button class="linkish" id="btnRef" type="button">Trajet de référence — Saint-Nazaire → Saint-Lyé</button>
+        <span id="tripStatus"></span>
+      </div>
+      <p class="trip-note">Le domicile est mémorisé dans l'adresse de la page : copiez le lien et remettez-le en favori, il reviendra pré-rempli. Adresses géocodées par Nominatim, itinéraires calculés par Valhalla (avec repli sur OSRM) — ces trois fonctions demandent une connexion.</p>
+    </div>
+  </section>
 
   <!-- ============ FILTRES (une seule rangée, elle cadre tout ce qui suit) ============ -->
   <div class="controls" role="group" aria-label="Paramètres de calcul">
@@ -1036,10 +1100,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
     </div>
 
     <div class="ctrl">
-      <span class="lg">Usure &amp; entretien · c/km</span>
+      <span class="lg">Usure &amp; entretien</span>
       <div class="price-row">
-        <label class="price-in"><span>Saxo</span><input id="pW" type="number" step="0.5" min="0" max="40" value="8"></label>
-        <button class="linkish" type="button" id="presetWear0">Carburant + péage seuls</button>
+        <div class="seg" id="segWear">
+          <button type="button" data-v="1" aria-pressed="true">Incluse</button>
+          <button type="button" data-v="0" aria-pressed="false">Exclue</button>
+        </div>
+        <label class="price-in"><span>c/km</span><input id="pW" type="number" step="0.5" min="0" max="40" value="8"></label>
       </div>
     </div>
 
@@ -1059,19 +1126,19 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <h2><span class="kj">概要</span><span class="tx">Synthèse</span></h2>
     <div class="kpis">
       <div class="tile">
-        <div class="lab">Temps gagné — Option A vs Option B</div>
+        <div class="lab" id="kpiTimeLab">Temps gagné</div>
         <div class="val" id="kpiTime">—</div>
         <div class="sub" id="kpiTimeSub">—</div>
       </div>
       <div class="tile">
-        <div class="lab">Économie — Option B vs Option A</div>
+        <div class="lab" id="kpiSaveLab">Économie</div>
         <div class="val" id="kpiSave">—</div>
         <div class="sub" id="kpiSaveSub">—</div>
         <div class="delta" id="kpiSaveDelta"></div>
       </div>
       <div class="tile reco">
         <div class="pill-good" aria-label="Recommandé">✓ Recommandation pour la Saxo 2001</div>
-        <div class="reco-name">Option C — Compromis mi-péage</div>
+        <div class="reco-name" id="kpiRecoName">Option C — Compromis mi-péage</div>
         <div class="hero" id="kpiReco">—</div>
         <div class="sub" id="kpiRecoSub">—</div>
         <div class="reco-meta" id="kpiRecoMeta"></div>
@@ -1149,11 +1216,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   <section>
     <h2><span class="kj">行程</span><span class="tx">Feuille de route &amp; pauses</span></h2>
     <div class="card">
-      <div class="tabs">
-        <button type="button" data-o="A" aria-pressed="false">Option A — Le plus rapide</button>
-        <button type="button" data-o="B" aria-pressed="false">Option B — Sans péage</button>
-        <button type="button" data-o="C" aria-pressed="true">Option C — Compromis</button>
-        <button type="button" data-o="D" aria-pressed="false">Option D — Sans Île-de-France</button>
+      <div class="tabs" id="tabs">
         <label class="depart">Départ <input type="date" id="departDate"> <input type="time" id="departTime" value="06:45"></label>
       </div>
       <p class="chart-sub" id="rmSub" style="margin-bottom:18px">—</p>
@@ -1218,6 +1281,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <h2><span class="kj">註記</span><span class="tx">Méthode &amp; sources</span></h2>
     <div class="card">
       <h3>Méthode &amp; incertitudes</h3>
+      <ul id="calcNote" hidden><li><b>Trajet calculé</b> — les distances, durées et tracés viennent du calculateur d'itinéraires en ligne ; les temps affichés sont ensuite recalculés avec le modèle de vitesses de cette fiche pour rester comparables. Le <b>péage est estimé</b> à 8,9 c/km de réseau concédé, moyenne classe 1 : comptez ± 25 % selon les sections. Les points de restauration ne sont renseignés que pour le trajet de référence ; les pauses sont placées automatiquement toutes les deux heures et nommées par la commune la plus proche.</li></ul>
       <ul>
         <li><b>Distances et temps</b> — tracés calculés sur un moteur de routage cartographique (OSRM / OpenStreetMap) entre les adresses exactes, puis ventilés par tronçon avec des vitesses <em>moyennes</em> réelles — barrières, échangeurs et ralentissements compris, ce ne sont pas des vitesses de croisière : autoroute 120 km/h en rythme rapide (croisière 130) et 106 km/h en rythme sobre (croisière 110), voies rapides gratuites 93 km/h, francilienne 70 km/h, départementales 72 à 82 km/h selon la densité de traversées. Marge ± 3 %. Hors trafic et hors traversées urbaines aux heures de pointe.</li>
         <li><b>Consommations</b> — modèle pour une Saxo d'environ 1 000 kg. Essence (TU 1.1i / 1.4i) : 7,3 L/100 à 130 km/h, 5,9 à 110, 5,4 à 5,6 sur route. Diesel (TUD5 1.5 D, 57 ch) : 5,9 L/100 à 130 km/h (moteur en limite), 4,7 à 110, 4,3 à 4,5 sur route. Majorer de 5 à 10 % si le véhicule est chargé, climatisé en continu ou mal entretenu.</li>
@@ -1262,7 +1326,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
    ========================================================================= */
 const SEG = (label, km, type) => ({label, km, type});
 
-const OPTIONS = [
+const REFERENCE = [
   {
     id:"A", nom:"Le plus rapide", court:"Francilienne",
     sub:"Le vrai plus court en temps — A11 / A10 / N104 / A5",
@@ -1430,12 +1494,16 @@ const P = {
     [48.3100, 3.9000],[48.3620, 4.0010]]
 };
 const join = (...ps) => ps.reduce((acc,p)=>acc.concat(acc.length?p.slice(1):p),[]);
-const TRACKS = {
+const REF_TRACKS = {
   A: join(P.start,P.naAuto,P.a11est,P.n104,P.a5),
   B: join(P.start,P.naFree,P.atFree,P.toFree,P.d2060,P.tail),
   C: join(P.start,P.naFree,P.atAuto,P.toAuto,P.d2060,P.tail),
   D: join(P.start,P.naAuto,P.atAuto,P.toAuto,P.a19,P.tail)
 };
+let OPTIONS = REFERENCE.slice();          // jeu actif
+let TRACKS  = Object.assign({}, REF_TRACKS);
+let MODE = "ref";                         // "ref" | "calc"
+const REF_TITLE = {from:"57 bis rue Michel-Ange, 44600 Saint-Nazaire", to:"46 bis rue Jeanne d'Arc, 10180 Saint-Lyé"};
 
 /* ---- points restauration / services ---- */
 const FOOD = [
@@ -1498,7 +1566,8 @@ AUTOMODEL.essence.k1 = 5.9 - AUTOMODEL.essence.k2*110*110;
 AUTOMODEL.diesel.k1  = 4.7 - AUTOMODEL.diesel.k2*110*110;
 
 const state = {fuel:"essence", regime:"sobre", trip:1, pax:1, pE:1.75, pD:1.65,
-               wear:8, hourly:15, opt:"C", depart:"06:45", date:null};
+               wearOn:true, wearRate:8, get wear(){return this.wearOn?this.wearRate:0;},
+               hourly:15, opt:"C", depart:"06:45", date:null, home:"", homeLL:null};
 const WX = {};   // cache météo, clé "option|date"
 
 /* =========================================================================
@@ -1533,6 +1602,11 @@ const all = (fuel=state.fuel, regime=state.regime) => OPTIONS.map(o=>compute(o,f
 const byId = (arr,id) => arr.find(r=>r.o.id===id);
 
 /* --- formats --- */
+function recoRow(rows){
+  const flagged = rows.find(r=>r.o.reco);
+  if(flagged) return flagged;
+  return rows.reduce((a,b)=> (b.total + state.hourly*b.min/60) < (a.total + state.hourly*a.min/60) ? b : a);
+}
 const nf = (n,d=2) => n.toLocaleString("fr-FR",{minimumFractionDigits:d,maximumFractionDigits:d});
 const eur = n => nf(n,2)+" €";
 const hm  = m => { m=Math.round(m); return Math.floor(m/60)+" h "+String(m%60).padStart(2,"0"); };
@@ -1554,12 +1628,16 @@ function timeAtKm(o, km, regime){
    ========================================================================= */
 function renderKPI(){
   const T = state.trip;
-  const fast = compute(byId(all(),"A").o, state.fuel, state.regime);
-  const eco  = compute(byId(all(),"B").o, state.fuel, state.regime);
-  const rec  = compute(byId(all(),"C").o, state.fuel, state.regime);
-  const fast130 = compute(byId(all(),"A").o, state.fuel, "vite");
+  const rows = all();
+  const fast = rows.reduce((a,b)=> b.min < a.min ? b : a);
+  const eco  = rows.reduce((a,b)=> b.total < a.total ? b : a);
+  const rec  = recoRow(rows);
+  const fast130 = compute(fast.o, state.fuel, "vite");
 
   const dT = (eco.min - fast.min)*T;
+  document.getElementById("kpiTimeLab").textContent = `Temps gagné — option ${fast.o.id} vs option ${eco.o.id}`;
+  document.getElementById("kpiSaveLab").textContent = `Économie — option ${eco.o.id} vs option ${fast.o.id}`;
+  document.getElementById("kpiRecoName").textContent = `Option ${rec.o.id} — ${rec.o.nom}`;
   document.getElementById("kpiTime").textContent = hm(dT);
   document.getElementById("kpiTimeSub").innerHTML =
     `${hm(fast.min*T)} de conduite en tout-autoroute contre ${hm(eco.min*T)} sans péage.<br>`+
@@ -1595,12 +1673,10 @@ function renderKPI(){
   } else { a.hidden = true; }
 
   // éco-conduite règle 1
-  const cV = compute(byId(all(),"C").o, state.fuel, "vite");
-  const cS = compute(byId(all(),"C").o, state.fuel, "sobre");
-  const aV = compute(byId(all(),"A").o, state.fuel, "vite");
-  const aS = compute(byId(all(),"A").o, state.fuel, "sobre");
+  const cV = compute(rec.o, state.fuel, "vite"), cS = compute(rec.o, state.fuel, "sobre");
+  const aV = compute(fast.o, state.fuel, "vite"), aS = compute(fast.o, state.fuel, "sobre");
   document.getElementById("eco1").textContent =
-    `Gain mesuré : ${eur((aV.carb-aS.carb)*T)} sur l'option A, ${eur((cV.carb-cS.carb)*T)} sur l'option C `+
+    `Gain mesuré : ${eur((aV.carb-aS.carb)*T)} sur l'option ${fast.o.id}, ${eur((cV.carb-cS.carb)*T)} sur l'option ${rec.o.id} `+
     `(${T===2?"aller-retour":"aller simple"}), pour ${hmShort((aS.min-aV.min)*T)} « perdues ».`;
 }
 
@@ -1819,9 +1895,12 @@ function costAtSpeed(o, fuel, v){
 function chartSpeed(){
   const svg=document.getElementById("svgSpeed"), card=document.getElementById("cardSpeed"), tip=document.getElementById("tipSpeed");
   clear(svg);
-  const T=state.trip, o=OPTIONS.find(x=>x.id==="C");
-  document.getElementById("speedSub").textContent =
-    `Coût du carburant seul, ${T===2?"aller-retour":"aller simple"}, sur les 223 km d'autoroute de l'option C. Le péage (${eur(o.peage*T)}) ne dépend pas de la vitesse.`;
+  const T=state.trip, o=recoRow(all()).o;
+  const kmAuto = o.segs.filter(s=>s.type==="auto").reduce((a,s)=>a+s.km,0);
+  document.querySelector("#cardSpeed .chart-title").textContent = `Le prix de la vitesse — option ${o.id}`;
+  document.getElementById("speedSub").textContent = kmAuto
+    ? `Coût du carburant seul, ${T===2?"aller-retour":"aller simple"}, sur les ${Math.round(kmAuto*T)} km d'autoroute de l'option ${o.id}. Le péage (${eur(o.peage*T)}) ne dépend pas de la vitesse.`
+    : `L'option ${o.id} n'emprunte aucune autoroute : la vitesse de croisière n'a pas d'effet sur son coût.`;
 
   const W=1060,H=300,m={t:20,r:118,b:46,l:66};
   const pw=W-m.l-m.r, ph=H-m.t-m.b;
@@ -2142,13 +2221,15 @@ function renderMap(fit){
 
   layers.food.clearLayers();
   if(document.getElementById("togFood").checked){
-    FOOD.filter(f=>f.o.includes(sel)).forEach(f=>{
+    (MODE==="ref" ? FOOD.filter(f=>f.o.includes(sel)) : []).forEach(f=>{
       L.marker(f.ll,{icon:icon("mk-food","R"), zIndexOffset:250})
        .bindPopup(`<b>${f.nm}</b><span class="meta">Restauration / services</span>${f.d}`)
        .addTo(layers.food);
     });
   }
-  if(fit) MAP.fitBounds(L.polyline(TRACKS[sel]).getBounds(),{padding:[26,26]});
+  document.querySelector(".switch").style.display = MODE==="ref" ? "" : "none";
+  document.querySelectorAll(".maprow .lk")[3].style.display = MODE==="ref" ? "" : "none";
+  if(fit && TRACKS[sel]) MAP.fitBounds(L.polyline(TRACKS[sel]).getBounds(),{padding:[26,26]});
 }
 function focusStep(i){
   const o = OPTIONS.find(x=>x.id===state.opt), w=o.wp[i];
@@ -2244,6 +2325,279 @@ function updateMeter(){
     ? "tout est vérifié — bonne route" : "à faire la veille, moteur froid, sur sol plat";
 }
 
+
+/* =========================================================================
+   TRAJET LIBRE — géocodage Nominatim, calcul Valhalla (repli OSRM)
+   ========================================================================= */
+const PT = {from:null, to:null};
+const TOLL_PER_KM = 0.089;          // moyenne classe 1 sur le réseau concédé français
+const NOMINATIM = "https://nominatim.openstreetmap.org";
+
+function tripSay(txt, err){
+  const n=document.getElementById("tripStatus");
+  n.textContent = txt||""; n.classList.toggle("err", !!err);
+}
+async function geocode(q){
+  const u = `${NOMINATIM}/search?format=jsonv2&limit=6&addressdetails=0&accept-language=fr&q=${encodeURIComponent(q)}`;
+  const r = await fetch(u,{headers:{"Accept":"application/json"}});
+  if(!r.ok) throw new Error("géocodage indisponible");
+  return (await r.json()).map(x=>({label:x.display_name, lat:+x.lat, lon:+x.lon}));
+}
+async function reverse(lat,lon){
+  try{
+    const u=`${NOMINATIM}/reverse?format=jsonv2&zoom=12&accept-language=fr&lat=${lat}&lon=${lon}`;
+    const r=await fetch(u); if(!r.ok) return null;
+    const j=await r.json(), a=j.address||{};
+    return a.city||a.town||a.village||a.municipality||a.county||(j.display_name||"").split(",")[0]||null;
+  }catch(e){ return null; }
+}
+
+/* --- décodeur polyline (Valhalla : précision 6) --- */
+function decodePolyline(str, precision){
+  let index=0, lat=0, lng=0, out=[], f=Math.pow(10, precision||6);
+  while(index<str.length){
+    let b, shift=0, result=0;
+    do{ b=str.charCodeAt(index++)-63; result|=(b&0x1f)<<shift; shift+=5; }while(b>=0x20);
+    lat += (result&1) ? ~(result>>1) : (result>>1);
+    shift=0; result=0;
+    do{ b=str.charCodeAt(index++)-63; result|=(b&0x1f)<<shift; shift+=5; }while(b>=0x20);
+    lng += (result&1) ? ~(result>>1) : (result>>1);
+    out.push([lat/f, lng/f]);
+  }
+  return out;
+}
+const simplify = (pts,max) => pts.length<=max ? pts
+  : pts.filter((_,i)=> i%Math.ceil(pts.length/max)===0 || i===pts.length-1);
+
+/* --- Valhalla --- */
+async function routeValhalla(from,to,opts){
+  const body={locations:[{lat:from.lat,lon:from.lon},{lat:to.lat,lon:to.lon}],
+    costing:"auto", costing_options:{auto:opts},
+    directions_options:{units:"kilometers"}, shape_format:"polyline6"};
+  const r=await fetch("https://valhalla1.openstreetmap.de/route?json="+encodeURIComponent(JSON.stringify(body)));
+  if(!r.ok) throw new Error("valhalla "+r.status);
+  const j=await r.json();
+  if(!j.trip || !j.trip.legs || !j.trip.legs.length) throw new Error("valhalla vide");
+  const leg=j.trip.legs[0];
+  const shape=decodePolyline(leg.shape,6);
+  const buckets={auto:0, rapide:0, route:0}; let tollKm=0;
+  (leg.maneuvers||[]).forEach(m=>{
+    const km=m.length||0, hrs=(m.time||1)/3600, v=hrs>0?km/hrs:0;
+    const t = m.highway ? "auto" : (v>=85 ? "rapide" : "route");
+    buckets[t]+=km;
+    if(m.toll) tollKm+=km;
+  });
+  return {km:j.trip.summary.length, sec:j.trip.summary.time, shape, buckets, tollKm, src:"Valhalla"};
+}
+/* --- OSRM (repli) --- */
+async function routeOSRM(from,to,altIndex){
+  const u=`https://router.project-osrm.org/route/v1/driving/${from.lon},${from.lat};${to.lon},${to.lat}`+
+          `?overview=full&geometries=geojson&alternatives=2&annotations=speed,distance`;
+  const r=await fetch(u); if(!r.ok) throw new Error("osrm "+r.status);
+  const j=await r.json();
+  if(j.code!=="Ok" || !j.routes || !j.routes.length) throw new Error("osrm vide");
+  const rt=j.routes[Math.min(altIndex||0, j.routes.length-1)];
+  const shape=rt.geometry.coordinates.map(c=>[c[1],c[0]]);
+  const buckets={auto:0,rapide:0,route:0};
+  (rt.legs||[]).forEach(lg=>{
+    const a=lg.annotation||{};
+    (a.distance||[]).forEach((d,i)=>{
+      const v=(a.speed&&a.speed[i]?a.speed[i]:0)*3.6, km=d/1000;
+      buckets[ v>=105 ? "auto" : v>=80 ? "rapide" : "route" ] += km;
+    });
+  });
+  if(!buckets.auto && !buckets.rapide && !buckets.route) buckets.route = rt.distance/1000;
+  return {km:rt.distance/1000, sec:rt.duration, shape, buckets, tollKm:buckets.auto*0.85,
+          src:"OSRM", nAlt:j.routes.length};
+}
+
+/* --- conversion en option exploitable par tout le tableau de bord --- */
+function buildOption(id, nom, court, sub, r, tollFree){
+  const b=r.buckets, tot=(b.auto+b.rapide+b.route)||r.km;
+  const k=r.km/tot;                                  // recale les buckets sur la distance réelle
+  const segs=[];
+  if(b.auto>0.5)   segs.push(SEG("Autoroute",            +(b.auto*k).toFixed(1),  "auto"));
+  if(b.rapide>0.5) segs.push(SEG("Voie rapide",          +(b.rapide*k).toFixed(1),"rapide"));
+  if(b.route>0.5)  segs.push(SEG("Routes et traversées", +(b.route*k).toFixed(1), "route"));
+  if(!segs.length) segs.push(SEG("Itinéraire", +r.km.toFixed(1), "route"));
+  const peage = tollFree ? 0 : +(r.tollKm*k*TOLL_PER_KM).toFixed(2);
+  const o={id, nom, court, sub, peage, vRoute:76, segs,
+    peageDetail: tollFree ? "Aucun péage (itinéraire calculé sans péage)"
+      : `Estimation : ${Math.round(r.tollKm*k)} km de réseau concédé × ${nf(TOLL_PER_KM*100,1)} c/km`,
+    calc:{routerKm:r.km, routerMin:r.sec/60, src:r.src}};
+  o.wp = makeWaypoints(o, r.shape);
+  return o;
+}
+/* pauses toutes les 2 h + points de repère, placés sur la trace réelle */
+function makeWaypoints(o, shape){
+  const dist=o.segs.reduce((a,s)=>a+s.km,0);
+  const cum=[0]; let acc=0;
+  for(let i=1;i<shape.length;i++){
+    const [a1,o1]=shape[i-1], [a2,o2]=shape[i];
+    const dx=(o2-o1)*Math.cos((a1+a2)/2*Math.PI/180)*111.32, dy=(a2-a1)*110.57;
+    acc+=Math.hypot(dx,dy); cum.push(acc);
+  }
+  const scale = acc>0 ? dist/acc : 1;
+  const at = km => { const target=km/scale;
+    let i=cum.findIndex(c=>c>=target); if(i<0) i=cum.length-1; return shape[Math.max(0,i)]; };
+  const total = o.segs.reduce((a,s)=>a+s.km/speedOf(o,s.type,"sobre")*60,0);
+  const wp=[{km:0, ll:shape[0], nm:PT.from?shortName(PT.from.label):"Départ", note:"Départ — plein fait la veille"}];
+  const nP=Math.max(0, Math.floor(total/120));
+  for(let n=1;n<=nP;n++){
+    // km correspondant à n×2 h de conduite
+    let lo=0, hi=dist;
+    for(let it=0; it<40; it++){ const mid=(lo+hi)/2; (timeAtKm(o,mid,"sobre") < n*120) ? lo=mid : hi=mid; }
+    const km=Math.round((lo+hi)/2);
+    if(km>dist-25) break;
+    wp.push({km, ll:at(km), nm:"Pause "+n, note:"Pause conducteur · contrôle température, huile, fuites", pause:true, auto:true});
+  }
+  wp.push({km:Math.round(dist), ll:shape[shape.length-1],
+           nm:PT.to?shortName(PT.to.label):"Arrivée", note:"Arrivée", end:true});
+  return wp;
+}
+const shortName = s => s.split(",").slice(0,2).join(",").trim();
+
+/* --- nommage différé des pauses (Nominatim : 1 requête/s) --- */
+let rgQueue=[], rgBusy=false;
+function queueNames(o){
+  o.wp.filter(w=>w.auto && !w.named).forEach(w=>rgQueue.push({o,w}));
+  if(!rgBusy) drainNames();
+}
+async function drainNames(){
+  rgBusy=true;
+  while(rgQueue.length){
+    const {o,w}=rgQueue.shift();
+    if(!OPTIONS.includes(o)) continue;
+    const nm=await reverse(w.ll[0], w.ll[1]);
+    w.named=true;
+    if(nm){ w.nm=nm; w.note="Pause conducteur · contrôle température, huile, fuites"; }
+    if(state.opt===o.id) renderRoadmap();
+    await new Promise(r=>setTimeout(r,1100));
+  }
+  rgBusy=false;
+}
+
+/* --- orchestration --- */
+async function computeTrip(){
+  if(!PT.from || !PT.to){ tripSay("Choisissez un départ et une arrivée dans la liste proposée.", true); return; }
+  const go=document.getElementById("btnGo"); go.disabled=true;
+  tripSay("Calcul des itinéraires…");
+  const specs=[
+    {id:"A", nom:"Le plus rapide", court:"Rapide", sub:"Itinéraire le plus court en temps", v:{use_tolls:1}, alt:0},
+    {id:"B", nom:"Le moins cher",  court:"Sans péage", sub:"Calculé en évitant le réseau à péage", v:{use_tolls:0}, alt:1, free:true},
+    {id:"C", nom:"Compromis",      court:"Mi-péage", sub:"Péage toléré seulement s'il fait gagner du temps", v:{use_tolls:0.35}, alt:2}
+  ];
+  const opts=[], tracks={}; let src="";
+  for(const s of specs){
+    let r=null;
+    try{ r=await routeValhalla(PT.from,PT.to,s.v); }
+    catch(e){ try{ r=await routeOSRM(PT.from,PT.to,s.alt); }catch(e2){ r=null; } }
+    if(!r) continue;
+    src=r.src;
+    const o=buildOption(s.id,s.nom,s.court,s.sub,r,!!s.free);
+    // écarte un doublon (même distance à 1,5 % près qu'une option déjà retenue)
+    if(opts.some(p=>Math.abs(p.segs.reduce((a,x)=>a+x.km,0)-o.segs.reduce((a,x)=>a+x.km,0)) < o.segs.reduce((a,x)=>a+x.km,0)*0.015)) continue;
+    opts.push(o); tracks[s.id]=simplify(r.shape,400);
+  }
+  // un itinéraire à la fois plus lent et plus cher qu'un autre n'apporte rien : on l'écarte
+  const km=o=>o.segs.reduce((a,s)=>a+s.km,0);
+  const tm=o=>o.segs.reduce((a,s)=>a+s.km/speedOf(o,s.type,"sobre")*60,0);
+  const ct=o=>{const d=km(o); return d*0.058*price(state.fuel)+o.peage+d*state.wear/100;};
+  const kept=opts.filter(o=>!opts.some(q=>q!==o && tm(q)<=tm(o) && ct(q)<=ct(o) && (tm(q)<tm(o)||ct(q)<ct(o))));
+  if(kept.length){ Object.keys(tracks).forEach(id=>{ if(!kept.some(o=>o.id===id)) delete tracks[id]; });
+                   opts.length=0; opts.push(...kept); }
+  go.disabled=false;
+  if(!opts.length){ tripSay("Aucun itinéraire n'a pu être calculé — vérifiez la connexion, puis réessayez.", true); return; }
+  OPTIONS=opts; TRACKS=tracks; MODE="calc"; state.opt=opts[0].id;
+  document.querySelector("header.top h1").textContent =
+    shortName(PT.from.label).split(",")[0] + " → " + shortName(PT.to.label).split(",")[0];
+  document.querySelector(".route-line").innerHTML =
+    `<strong>${shortName(PT.from.label)}</strong> → <strong>${shortName(PT.to.label)}</strong>`;
+  tripSay(`${opts.length} itinéraire${opts.length>1?"s":""} calculé${opts.length>1?"s":""} via ${src}. `+
+          `Péages estimés à ${nf(TOLL_PER_KM*100,1)} c/km de réseau concédé.`);
+  document.getElementById("badge-date").textContent = "Trajet calculé";
+  document.getElementById("calcNote").hidden = false;
+  afterOptionsChange(true);
+  opts.forEach(queueNames);
+}
+function useReference(){
+  OPTIONS=REFERENCE.slice(); TRACKS=Object.assign({},REF_TRACKS); MODE="ref"; state.opt="C";
+  document.querySelector("header.top h1").textContent="Saint-Nazaire → Saint-Lyé";
+  document.querySelector(".route-line").innerHTML =
+    `<strong>57 bis rue Michel-Ange</strong>, 44600 Saint-Nazaire → <strong>46 bis rue Jeanne d'Arc</strong>, 10180 Saint-Lyé (Aube)`;
+  document.getElementById("badge-date").textContent="Fiche du 28 juillet 2026";
+  document.getElementById("calcNote").hidden = true;
+  tripSay("");
+  afterOptionsChange(true);
+}
+function afterOptionsChange(fit){
+  renderTabs();
+  const s=document.getElementById("sealOpt"); if(s) s.textContent = state.opt+"案";
+  Object.keys(layers.tracks||{}).forEach(id=>{ if(MAP) MAP.removeLayer(layers.tracks[id]); });
+  layers.tracks={};
+  if(mapReady){
+    Object.keys(TRACKS).forEach(id=>{ layers.tracks[id]=L.polyline(TRACKS[id],{weight:2}).addTo(MAP); });
+  }
+  renderAll();
+  if(mapReady) renderMap(fit); else if(fallbackMap.redraw) fallbackMap.redraw();
+  loadWeather();
+}
+function renderTabs(){
+  const box=document.getElementById("tabs"), dep=box.querySelector(".depart");
+  box.querySelectorAll("button[data-o]").forEach(b=>b.remove());
+  OPTIONS.forEach(o=>{
+    const b=document.createElement("button");
+    b.type="button"; b.dataset.o=o.id;
+    b.setAttribute("aria-pressed", String(o.id===state.opt));
+    b.textContent=`Option ${o.id} — ${o.court}`;
+    box.insertBefore(b, dep);
+  });
+}
+
+/* --- autocomplétion --- */
+function autocomplete(inputId, listId, onPick){
+  const inp=document.getElementById(inputId), list=document.getElementById(listId);
+  let t=null;
+  const close=()=>list.classList.remove("open");
+  inp.addEventListener("input",()=>{
+    onPick(null);
+    clearTimeout(t);
+    const q=inp.value.trim();
+    if(q.length<3){ close(); return; }
+    t=setTimeout(async ()=>{
+      try{
+        const res=await geocode(q);
+        list.innerHTML=res.map(r=>`<li data-lat="${r.lat}" data-lon="${r.lon}">${r.label}</li>`).join("");
+        list.classList.toggle("open", res.length>0);
+        [...list.children].forEach((li,i)=>li.addEventListener("click",()=>{
+          inp.value=shortName(res[i].label); onPick(res[i]); close();
+        }));
+      }catch(e){ tripSay("Géocodage indisponible — pas de connexion ?", true); close(); }
+    }, 450);
+  });
+  inp.addEventListener("blur",()=>setTimeout(close,180));
+}
+
+/* --- mémorisation dans l'adresse de la page --- */
+function saveHash(){
+  const d={};
+  if(state.homeLL) d.h=[state.home, state.homeLL.lat, state.homeLL.lon];
+  if(PT.from) d.f=[shortName(PT.from.label), PT.from.lat, PT.from.lon];
+  if(PT.to)   d.t=[shortName(PT.to.label),   PT.to.lat,   PT.to.lon];
+  history.replaceState(null,"", Object.keys(d).length ? "#t="+encodeURIComponent(JSON.stringify(d)) : location.pathname);
+}
+function loadHash(){
+  const m=(location.hash||"").match(/#t=(.*)$/); if(!m) return false;
+  try{
+    const d=JSON.parse(decodeURIComponent(m[1]));
+    if(d.h){ state.home=d.h[0]; state.homeLL={label:d.h[0],lat:d.h[1],lon:d.h[2]};
+             document.getElementById("inHome").value=d.h[0]; }
+    if(d.f){ PT.from={label:d.f[0],lat:d.f[1],lon:d.f[2]}; document.getElementById("inFrom").value=d.f[0]; }
+    if(d.t){ PT.to={label:d.t[0],lat:d.t[1],lon:d.t[2]};   document.getElementById("inTo").value=d.t[0]; }
+    return !!(d.f&&d.t);
+  }catch(e){ return false; }
+}
+
 /* =========================================================================
    ÉVÉNEMENTS
    ========================================================================= */
@@ -2262,12 +2616,20 @@ segBind("segTrip","trip",Number);
 segBind("segPax","pax",Number);
 
 document.getElementById("pE").addEventListener("input",e=>{ state.pE = parseFloat(e.target.value)||0; renderAll(); });
-document.getElementById("pW").addEventListener("input",e=>{ state.wear = Math.max(0, parseFloat(e.target.value)||0); renderAll(); });
-document.getElementById("presetWear0").addEventListener("click",()=>{
-  state.wear = state.wear>0 ? 0 : 8;
-  document.getElementById("pW").value = state.wear;
-  document.getElementById("presetWear0").textContent = state.wear>0 ? "Carburant + péage seuls" : "Réintégrer l'usure (8 c/km)";
+document.getElementById("pW").addEventListener("input",e=>{
+  state.wearRate = Math.max(0, parseFloat(e.target.value)||0);
+  if(state.wearRate>0 && !state.wearOn) setWear(true);
   renderAll();
+});
+function setWear(on){
+  state.wearOn=on;
+  document.querySelectorAll("#segWear button").forEach(b=>b.setAttribute("aria-pressed", String((b.dataset.v==="1")===on)));
+  document.getElementById("pW").disabled = !on;
+  document.getElementById("pW").style.opacity = on ? 1 : .4;
+}
+document.getElementById("segWear").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  setWear(b.dataset.v==="1"); renderAll();
 });
 document.getElementById("beRange").addEventListener("input",e=>{
   state.hourly = +e.target.value;
@@ -2284,10 +2646,12 @@ document.getElementById("presetHyp").addEventListener("click",()=>{
 document.getElementById("presetReel").addEventListener("click",()=>{
   state.pE=2.05; state.pD=2.15; document.getElementById("pE").value="2.05"; document.getElementById("pD").value="2.15"; renderAll();
 });
-document.querySelector(".tabs").addEventListener("click",e=>{
+document.getElementById("tabs").addEventListener("click",e=>{
   const b=e.target.closest("button[data-o]"); if(!b) return;
-  document.querySelectorAll(".tabs button[data-o]").forEach(x=>x.setAttribute("aria-pressed", x===b));
-  state.opt=b.dataset.o; renderRoadmap(); loadWeather();
+  document.querySelectorAll("#tabs button[data-o]").forEach(x=>x.setAttribute("aria-pressed", x===b));
+  state.opt=b.dataset.o;
+  const s=document.getElementById("sealOpt"); if(s && MODE!=="ref") s.textContent=state.opt+"案";
+  renderRoadmap(); loadWeather();
   if(mapReady) renderMap(true); else if(fallbackMap.redraw) fallbackMap.redraw();
 });
 document.getElementById("togFood").addEventListener("change",()=>{ if(mapReady) renderMap(false); });
@@ -2299,6 +2663,28 @@ document.getElementById("chkReset").addEventListener("click",()=>{
   document.querySelectorAll("#checklist input").forEach(i=>{ i.checked=false; i.closest(".chk").classList.remove("done"); });
   updateMeter();
 });
+
+// panneau trajet
+autocomplete("inFrom","sgFrom", r=>{ PT.from=r; saveHash(); });
+autocomplete("inTo","sgTo",     r=>{ PT.to=r;   saveHash(); });
+autocomplete("inHome","sgHome", r=>{ if(r){ state.home=shortName(r.label); state.homeLL=r; saveHash(); } });
+document.getElementById("btnSwap").addEventListener("click",()=>{
+  const a=document.getElementById("inFrom"), b=document.getElementById("inTo");
+  [a.value,b.value]=[b.value,a.value]; [PT.from,PT.to]=[PT.to,PT.from]; saveHash();
+});
+document.querySelectorAll("[data-fill]").forEach(btn=>btn.addEventListener("click",()=>{
+  if(!state.homeLL){ tripSay("Renseignez d'abord une adresse dans le champ Domicile.", true); return; }
+  const which=btn.dataset.fill;
+  document.getElementById(which==="from"?"inFrom":"inTo").value = state.home;
+  PT[which]={...state.homeLL, label:state.home}; saveHash(); tripSay("");
+}));
+document.getElementById("btnCopyLink").addEventListener("click",async ()=>{
+  saveHash();
+  try{ await navigator.clipboard.writeText(location.href); tripSay("Lien copié — remettez-le en favori."); }
+  catch(e){ tripSay("Copie impossible : sélectionnez l'adresse de la page à la main."); }
+});
+document.getElementById("btnGo").addEventListener("click",computeTrip);
+document.getElementById("btnRef").addEventListener("click",useReference);
 
 // thème
 const themes=["","light","dark"], names={"":"Thème : auto","light":"Thème : clair","dark":"Thème : sombre"};
@@ -2324,9 +2710,16 @@ renderChecklist();
   state.date = `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`;
   document.getElementById("departDate").value = state.date;
 })();
+renderTabs();
+setWear(true);
+const restored = loadHash();
 renderAll();
 loadMap();
 loadWeather();
+if(restored){
+  tripSay("Trajet restauré depuis le lien — appuyez sur « Calculer les itinéraires ».");
+  document.getElementById("secTrip").scrollIntoView({behavior:"smooth",block:"start"});
+}
 })();
 </script>
 </body>
