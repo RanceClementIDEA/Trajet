@@ -1,0 +1,2285 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0D1B2A">
+<title>London Trip Planner — Explorez, planifiez, savourez Londres</title>
+<meta name="description" content="Planificateur de voyage interactif pour Londres : activités, carte, itinéraires depuis votre hôtel et planning multi-jours avec budget automatique.">
+
+<!-- ===== Google Fonts ===== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;0,900;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- ===== FontAwesome 6 ===== -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+<!-- ===== Leaflet ===== -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
+<style>
+/* =====================================================================
+   LONDON TRIP PLANNER — Design system "British Modern"
+   ===================================================================== */
+
+:root{
+  /* --- Palette --- */
+  --navy:#0D1B2A;
+  --navy-700:#132A42;
+  --navy-600:#1B3A5C;
+  --red:#C8102E;
+  --red-600:#A80D26;
+  --gold:#D4AF37;
+  --gold-600:#B9962C;
+  --slate:#F8F9FA;
+
+  /* --- Neutres dérivés --- */
+  --ink:#0D1B2A;
+  --ink-2:#42536B;
+  --ink-3:#7A8899;
+  --line:#E4E8EE;
+  --line-2:#EFF2F6;
+  --white:#FFFFFF;
+
+  /* --- Catégories --- */
+  --c-musee:#2F5D8C;
+  --c-food:#C8102E;
+  --c-panorama:#0F8B8D;
+  --c-insolite:#7C4DBE;
+  --c-monument:#B8860B;
+  --c-nuit:#D4468A;
+
+  /* --- Rayons & ombres --- */
+  --r-sm:8px; --r-md:12px; --r-lg:18px; --r-xl:26px;
+  --sh-xs:0 1px 2px rgba(13,27,42,.06);
+  --sh-sm:0 2px 8px rgba(13,27,42,.07);
+  --sh-md:0 8px 24px -6px rgba(13,27,42,.14);
+  --sh-lg:0 22px 54px -18px rgba(13,27,42,.34);
+  --sh-xl:0 40px 90px -28px rgba(13,27,42,.45);
+
+  --header-h:74px;
+  --ease:cubic-bezier(.34,.9,.32,1);
+}
+
+*,*::before,*::after{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  background:var(--slate);
+  color:var(--ink);
+  font-size:14.5px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow:hidden;
+}
+h1,h2,h3,h4{font-family:'Playfair Display',Georgia,serif;font-weight:700;margin:0;letter-spacing:-.01em;}
+button,input,select,textarea{font:inherit;color:inherit;}
+button{cursor:pointer;border:none;background:none;}
+a{color:inherit;}
+::selection{background:var(--gold);color:var(--navy);}
+
+/* --- Scrollbars --- */
+.scroll{scrollbar-width:thin;scrollbar-color:#CBD3DD transparent;}
+.scroll::-webkit-scrollbar{width:9px;height:9px;}
+.scroll::-webkit-scrollbar-track{background:transparent;}
+.scroll::-webkit-scrollbar-thumb{background:#CBD3DD;border-radius:99px;border:2px solid var(--white);}
+.scroll::-webkit-scrollbar-thumb:hover{background:#A9B4C2;}
+
+/* =====================================================================
+   BOUTONS
+   ===================================================================== */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5em;
+  padding:.62em 1.05em;border-radius:var(--r-md);
+  font-size:.86rem;font-weight:600;letter-spacing:.01em;
+  background:var(--white);color:var(--ink);
+  border:1px solid var(--line);
+  transition:all .2s var(--ease);
+  white-space:nowrap;
+}
+.btn:hover{border-color:#CDD5E0;box-shadow:var(--sh-sm);transform:translateY(-1px);}
+.btn:active{transform:translateY(0) scale(.985);}
+.btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+.btn--primary{background:var(--red);color:#fff;border-color:transparent;box-shadow:0 6px 18px -6px rgba(200,16,46,.6);}
+.btn--primary:hover{background:var(--red-600);box-shadow:0 10px 24px -8px rgba(200,16,46,.7);}
+.btn--gold{background:linear-gradient(135deg,var(--gold),#E7C965);color:var(--navy);border-color:transparent;box-shadow:0 6px 18px -8px rgba(212,175,55,.85);}
+.btn--gold:hover{filter:brightness(1.04);}
+.btn--ghost{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.2);}
+.btn--ghost:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.34);}
+.btn--sm{padding:.45em .7em;font-size:.78rem;border-radius:9px;}
+.btn--icon{padding:.5em;width:34px;height:34px;}
+.btn[disabled]{opacity:.45;pointer-events:none;}
+
+/* =====================================================================
+   APP SHELL
+   ===================================================================== */
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;}
+
+/* ---------- HEADER ---------- */
+.hd{
+  height:var(--header-h);flex:0 0 auto;
+  display:flex;align-items:center;gap:14px;
+  padding:0 20px;
+  background:
+    radial-gradient(1100px 190px at 12% -60%,rgba(212,175,55,.24),transparent 62%),
+    radial-gradient(760px 200px at 88% 150%,rgba(200,16,46,.32),transparent 60%),
+    linear-gradient(180deg,#122740,#0D1B2A);
+  color:#fff;
+  box-shadow:0 2px 22px rgba(13,27,42,.28);
+  z-index:1200;position:relative;
+}
+.hd::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;
+  background:linear-gradient(90deg,var(--red) 0 32%,#fff 32% 66%,var(--navy-600) 66% 100%);opacity:.85;}
+.hd__brand{display:flex;align-items:center;gap:12px;min-width:0;}
+.hd__crest{
+  width:42px;height:42px;flex:0 0 auto;border-radius:13px;
+  display:grid;place-items:center;font-size:1.05rem;color:var(--navy);
+  background:linear-gradient(140deg,var(--gold),#F0DA92 55%,#C9A431);
+  box-shadow:0 8px 20px -8px rgba(212,175,55,.9),inset 0 1px 0 rgba(255,255,255,.6);
+}
+.hd__titles{min-width:0;}
+.hd__title{font-size:1.32rem;font-weight:800;line-height:1.05;letter-spacing:-.02em;white-space:nowrap;}
+.hd__title em{font-style:italic;color:var(--gold);}
+.hd__sub{font-size:.7rem;text-transform:uppercase;letter-spacing:.16em;color:rgba(255,255,255,.5);font-weight:600;white-space:nowrap;}
+.hd__spacer{flex:1;}
+.hd__stat{
+  display:flex;flex-direction:column;align-items:flex-end;line-height:1.1;
+  padding:0 16px;border-right:1px solid rgba(255,255,255,.14);margin-right:4px;
+}
+.hd__stat b{font-family:'Playfair Display',serif;font-size:1.18rem;color:var(--gold);}
+.hd__stat span{font-size:.63rem;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.55);font-weight:600;}
+.hd__actions{display:flex;gap:9px;align-items:center;}
+
+/* ---------- LAYOUT PRINCIPAL ---------- */
+.main{flex:1;display:grid;grid-template-columns:minmax(370px,35%) 1fr;min-height:0;}
+
+/* =====================================================================
+   SIDEBAR
+   ===================================================================== */
+.side{
+  display:flex;flex-direction:column;min-height:0;min-width:0;
+  background:var(--white);border-right:1px solid var(--line);
+  position:relative;z-index:900;
+}
+.side__filters{padding:16px 16px 12px;border-bottom:1px solid var(--line-2);background:var(--white);}
+
+/* Recherche */
+.search{position:relative;}
+.search input{
+  width:100%;padding:12px 40px 12px 42px;border-radius:14px;
+  border:1px solid var(--line);background:var(--slate);
+  font-size:.92rem;font-weight:500;transition:.2s var(--ease);
+}
+.search input::placeholder{color:var(--ink-3);font-weight:400;}
+.search input:focus{outline:none;background:#fff;border-color:var(--navy-600);box-shadow:0 0 0 4px rgba(27,58,92,.1);}
+.search__ico{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--ink-3);font-size:.92rem;pointer-events:none;}
+.search__clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;
+  display:none;place-items:center;color:var(--ink-3);font-size:.8rem;}
+.search__clear:hover{background:var(--line-2);color:var(--ink);}
+.search.is-filled .search__clear{display:grid;}
+
+/* Groupes de filtres */
+.fgroup{margin-top:14px;}
+.fgroup__head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.fgroup__title{font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--ink-3);}
+.fgroup__reset{font-size:.7rem;font-weight:700;color:var(--red);opacity:0;pointer-events:none;transition:.2s;}
+.fgroup.is-active .fgroup__reset{opacity:1;pointer-events:auto;}
+.fgroup__reset:hover{text-decoration:underline;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 11px;border-radius:99px;font-size:.775rem;font-weight:600;
+  background:var(--slate);border:1px solid var(--line);color:var(--ink-2);
+  transition:all .18s var(--ease);
+}
+.chip i{font-size:.75rem;color:var(--c,var(--ink-3));transition:.18s;}
+.chip:hover{border-color:#CBD3DD;background:#fff;transform:translateY(-1px);}
+.chip.is-on{background:var(--c,var(--navy));border-color:transparent;color:#fff;box-shadow:0 5px 14px -6px var(--c,var(--navy));}
+.chip.is-on i{color:#fff;}
+
+/* Barre de résultats */
+.side__bar{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:9px 18px;background:var(--slate);border-bottom:1px solid var(--line-2);
+  font-size:.76rem;color:var(--ink-2);font-weight:600;
+}
+.side__bar b{color:var(--ink);}
+.sortsel{
+  border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 8px;
+  font-size:.74rem;font-weight:600;color:var(--ink-2);cursor:pointer;
+}
+.sortsel:focus{outline:none;border-color:var(--navy-600);}
+
+/* Liste */
+.side__list{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;min-height:0;}
+
+/* =====================================================================
+   CARTE ACTIVITÉ
+   ===================================================================== */
+.card{
+  flex:0 0 auto;
+  background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);
+  overflow:hidden;transition:all .26s var(--ease);
+  animation:cardIn .38s var(--ease) both;
+  position:relative;
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+.card:hover{box-shadow:var(--sh-md);border-color:#D5DCE6;transform:translateY(-2px);}
+.card.is-active{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,175,55,.24),var(--sh-md);}
+.card.is-planned::after{
+  content:"";position:absolute;inset:0;border-radius:var(--r-lg);pointer-events:none;
+  box-shadow:inset 0 0 0 2px rgba(15,139,141,.5);
+}
+.card__media{position:relative;height:126px;overflow:hidden;background:var(--navy-700);}
+.card__media img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s var(--ease);}
+.card:hover .card__media img{transform:scale(1.07);}
+.card__media::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,27,42,.42) 0%,transparent 38%,transparent 58%,rgba(13,27,42,.55) 100%);}
+.card__badge{
+  position:absolute;top:10px;left:10px;z-index:2;
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 10px;border-radius:99px;font-size:.68rem;font-weight:800;
+  text-transform:uppercase;letter-spacing:.07em;color:#fff;
+  background:var(--c,var(--navy));box-shadow:0 4px 12px rgba(13,27,42,.35);
+  backdrop-filter:blur(4px);
+}
+.card__price{
+  position:absolute;bottom:10px;left:10px;z-index:2;
+  padding:5px 11px;border-radius:9px;font-size:.8rem;font-weight:800;
+  background:rgba(255,255,255,.95);color:var(--navy);box-shadow:0 4px 12px rgba(13,27,42,.28);
+}
+.card__price.is-free{background:linear-gradient(135deg,var(--gold),#EBD489);color:var(--navy);}
+.card__rate{
+  position:absolute;bottom:10px;right:10px;z-index:2;
+  display:inline-flex;align-items:center;gap:4px;
+  padding:5px 9px;border-radius:9px;font-size:.76rem;font-weight:700;
+  background:rgba(13,27,42,.72);color:#fff;backdrop-filter:blur(6px);
+}
+.card__rate i{color:var(--gold);font-size:.72rem;}
+.card__pin{
+  position:absolute;top:10px;right:10px;z-index:3;width:30px;height:30px;border-radius:9px;
+  display:grid;place-items:center;color:#fff;font-size:.78rem;
+  background:rgba(13,27,42,.55);backdrop-filter:blur(6px);transition:.2s;
+}
+.card__pin:hover{background:var(--gold);color:var(--navy);}
+.card__body{padding:11px 13px 12px;}
+.card__title{font-size:1.06rem;line-height:1.24;font-weight:700;letter-spacing:-.012em;}
+.card__meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:6px 0 7px;font-size:.735rem;color:var(--ink-3);font-weight:600;}
+.card__meta i{font-size:.7rem;margin-right:3px;}
+.card__meta .sep{width:3px;height:3px;border-radius:50%;background:#CBD3DD;}
+.card__desc{font-size:.815rem;color:var(--ink-2);line-height:1.5;margin:0 0 11px;
+  display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.card__tip{
+  display:flex;gap:7px;font-size:.75rem;color:#7A6220;background:rgba(212,175,55,.11);
+  border:1px solid rgba(212,175,55,.28);border-radius:9px;padding:7px 9px;margin:0 0 11px;line-height:1.4;
+}
+.card__tip i{margin-top:2px;color:var(--gold-600);}
+.card__tip span{display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.card__actions{display:flex;gap:6px;}
+.card__actions .btn{flex:1;}
+.card__custom{position:absolute;top:10px;right:46px;z-index:3;padding:4px 8px;border-radius:8px;
+  font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  background:rgba(255,255,255,.94);color:var(--navy);}
+
+/* Fallback image */
+.imgfb{width:100%;height:100%;display:grid;place-items:center;position:relative;
+  background:linear-gradient(140deg,var(--c,var(--navy)) 0%,var(--navy) 120%);}
+.imgfb::before{content:"";position:absolute;inset:0;opacity:.18;
+  background-image:radial-gradient(rgba(255,255,255,.55) 1px,transparent 1px);background-size:13px 13px;}
+.imgfb i{font-size:2.5rem;color:rgba(255,255,255,.9);text-shadow:0 6px 18px rgba(0,0,0,.35);}
+
+/* État vide */
+.empty{text-align:center;padding:52px 22px;color:var(--ink-3);}
+.empty i{font-size:2.3rem;color:#D3DAE3;margin-bottom:12px;display:block;}
+.empty h4{font-size:1.05rem;color:var(--ink);margin-bottom:5px;}
+.empty p{font-size:.83rem;margin:0 0 14px;}
+
+/* =====================================================================
+   ZONE PRINCIPALE / CARTE
+   ===================================================================== */
+.stage{display:flex;flex-direction:column;min-width:0;min-height:0;position:relative;background:var(--slate);}
+
+/* --- Barre hôtel --- */
+.hotelbar{
+  flex:0 0 auto;display:flex;align-items:center;gap:10px;
+  padding:11px 16px;background:#fff;border-bottom:1px solid var(--line);
+  box-shadow:0 2px 10px rgba(13,27,42,.04);z-index:800;position:relative;
+}
+.hotelbar__field{position:relative;flex:1;min-width:0;}
+.hotelbar__field input{
+  width:100%;padding:11px 100px 11px 40px;border-radius:13px;
+  border:1px solid var(--line);background:var(--slate);font-size:.9rem;font-weight:500;
+  transition:.2s var(--ease);
+}
+.hotelbar__field input:focus{outline:none;background:#fff;border-color:var(--gold);box-shadow:0 0 0 4px rgba(212,175,55,.16);}
+.hotelbar__ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gold-600);font-size:.9rem;}
+.hotelbar__go{position:absolute;right:6px;top:50%;transform:translateY(-50%);}
+.hotelbar__mode{display:flex;background:var(--slate);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px;}
+.hotelbar__mode button{padding:6px 11px;border-radius:8px;font-size:.78rem;font-weight:700;color:var(--ink-2);transition:.18s;}
+.hotelbar__mode button.is-on{background:var(--navy);color:#fff;box-shadow:var(--sh-xs);}
+.hotelbar__mode button:not(.is-on):hover{background:#fff;}
+
+/* Suggestions géocodage */
+.geolist{
+  position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:1400;
+  background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh-lg);
+  overflow:hidden;max-height:290px;overflow-y:auto;display:none;
+}
+.geolist.is-open{display:block;animation:pop .18s var(--ease);}
+@keyframes pop{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
+.geoitem{display:flex;gap:11px;padding:10px 13px;cursor:pointer;border-bottom:1px solid var(--line-2);transition:.14s;}
+.geoitem:last-child{border-bottom:none;}
+.geoitem:hover,.geoitem.is-hl{background:var(--slate);}
+.geoitem i{color:var(--gold-600);margin-top:3px;font-size:.85rem;}
+.geoitem b{display:block;font-size:.85rem;font-weight:700;}
+.geoitem span{font-size:.75rem;color:var(--ink-3);display:block;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.geoloading{padding:14px;text-align:center;color:var(--ink-3);font-size:.82rem;}
+
+/* Chip hôtel actif */
+.hotelchip{
+  display:none;align-items:center;gap:8px;padding:6px 8px 6px 12px;border-radius:11px;
+  background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));
+  border:1px solid rgba(212,175,55,.45);font-size:.78rem;font-weight:700;color:#6E5714;max-width:230px;
+}
+.hotelchip.is-on{display:flex;}
+.hotelchip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.hotelchip button{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;color:#6E5714;font-size:.72rem;}
+.hotelchip button:hover{background:rgba(212,175,55,.3);}
+
+/* --- Carte --- */
+.mapwrap{flex:1;position:relative;min-height:0;}
+#map{position:absolute;inset:0;background:#DFE6EC;}
+.leaflet-container{font-family:'Plus Jakarta Sans',sans-serif;}
+
+/* Marqueurs personnalisés */
+.mk{
+  width:36px;height:36px;border-radius:50% 50% 50% 8px;transform:rotate(-45deg);
+  display:grid;place-items:center;
+  background:var(--c,var(--navy));border:2.5px solid #fff;
+  box-shadow:0 6px 16px -4px rgba(13,27,42,.55);
+  transition:transform .28s var(--ease),box-shadow .28s var(--ease);
+}
+.mk i{transform:rotate(45deg);color:#fff;font-size:.85rem;}
+.mk-wrap:hover .mk,.mk-wrap.is-active .mk{transform:rotate(-45deg) scale(1.22);box-shadow:0 12px 26px -6px rgba(13,27,42,.7);}
+.mk-wrap.is-active .mk{border-color:var(--gold);}
+.mk-num{position:absolute;top:-7px;right:-7px;min-width:19px;height:19px;padding:0 4px;border-radius:99px;
+  background:var(--gold);color:var(--navy);font-size:.63rem;font-weight:800;display:grid;place-items:center;
+  border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);}
+.mk-hotel{
+  width:44px;height:44px;border-radius:14px;display:grid;place-items:center;
+  background:linear-gradient(140deg,var(--gold),#EBD489);border:3px solid #fff;
+  box-shadow:0 8px 22px -6px rgba(212,175,55,.95);position:relative;
+}
+.mk-hotel i{color:var(--navy);font-size:1.05rem;}
+.mk-hotel::after{content:"";position:absolute;inset:-8px;border-radius:20px;border:2px solid rgba(212,175,55,.65);
+  animation:ping 2.2s var(--ease) infinite;}
+@keyframes ping{0%{transform:scale(.85);opacity:.9;}70%{transform:scale(1.25);opacity:0;}100%{opacity:0;}}
+
+/* Popup Leaflet */
+.leaflet-popup-content-wrapper{border-radius:16px;box-shadow:var(--sh-lg);padding:0;overflow:hidden;border:1px solid var(--line);}
+.leaflet-popup-content{margin:0;width:266px!important;}
+.leaflet-popup-tip{box-shadow:var(--sh-sm);}
+.pop__img{height:112px;position:relative;overflow:hidden;background:var(--navy-700);}
+.pop__img img{width:100%;height:100%;object-fit:cover;}
+.pop__cat{position:absolute;top:9px;left:9px;padding:4px 9px;border-radius:99px;font-size:.63rem;
+  font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#fff;background:var(--c,var(--navy));}
+.pop__body{padding:11px 13px 13px;}
+.pop__title{font-family:'Playfair Display',serif;font-size:1.04rem;font-weight:700;line-height:1.2;margin-bottom:5px;}
+.pop__meta{display:flex;gap:9px;align-items:center;font-size:.74rem;color:var(--ink-3);font-weight:600;margin-bottom:7px;}
+.pop__meta b{color:var(--navy);}
+.pop__desc{font-size:.78rem;color:var(--ink-2);line-height:1.45;margin:0 0 10px;}
+.pop__acts{display:flex;gap:6px;}
+.pop__acts .btn{flex:1;}
+
+/* Contrôles carte */
+.mapctl{position:absolute;right:12px;top:12px;z-index:640;display:flex;flex-direction:column;gap:7px;}
+.mapctl button{
+  width:38px;height:38px;border-radius:11px;background:#fff;border:1px solid var(--line);
+  display:grid;place-items:center;color:var(--navy);box-shadow:var(--sh-sm);transition:.18s var(--ease);
+}
+.mapctl button:hover{background:var(--navy);color:#fff;border-color:transparent;transform:translateY(-1px);}
+.mapctl button.is-on{background:var(--gold);color:var(--navy);border-color:transparent;}
+.maplegend{
+  position:absolute;left:12px;bottom:12px;z-index:640;background:rgba(255,255,255,.94);
+  backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:14px;padding:10px 12px;
+  box-shadow:var(--sh-md);font-size:.72rem;font-weight:600;
+}
+.maplegend h5{font-family:'Plus Jakarta Sans';font-size:.62rem;text-transform:uppercase;letter-spacing:.13em;
+  color:var(--ink-3);margin:0 0 7px;font-weight:800;}
+.maplegend ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;}
+.maplegend li{display:flex;align-items:center;gap:6px;color:var(--ink-2);}
+.maplegend .dot{width:9px;height:9px;border-radius:50%;background:var(--c);flex:0 0 auto;}
+.maplegend .tog{margin-top:8px;padding-top:7px;border-top:1px solid var(--line-2);width:100%;text-align:left;
+  font-size:.68rem;font-weight:700;color:var(--ink-3);}
+.maplegend.is-min ul,.maplegend.is-min h5{display:none;}
+
+/* =====================================================================
+   DRAWER PLANNING
+   ===================================================================== */
+.drawer{
+  flex:0 0 auto;background:#fff;border-top:1px solid var(--line);
+  box-shadow:0 -10px 34px -18px rgba(13,27,42,.4);
+  display:flex;flex-direction:column;z-index:850;
+  height:298px;transition:height .38s var(--ease);
+}
+.drawer.is-collapsed{height:56px;}
+.drawer__head{
+  flex:0 0 auto;height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;
+  border-bottom:1px solid var(--line-2);cursor:pointer;user-select:none;
+}
+.drawer.is-collapsed .drawer__head{border-bottom-color:transparent;}
+.drawer__grip{width:30px;height:30px;border-radius:9px;background:var(--slate);display:grid;place-items:center;
+  color:var(--ink-2);transition:.25s var(--ease);}
+.drawer.is-collapsed .drawer__grip i{transform:rotate(180deg);}
+.drawer__title{font-size:1.04rem;font-weight:700;display:flex;align-items:center;gap:9px;}
+.drawer__count{font-family:'Plus Jakarta Sans';font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:99px;
+  background:var(--navy);color:#fff;letter-spacing:.03em;}
+.drawer__spacer{flex:1;}
+.budget{
+  display:flex;align-items:center;gap:10px;padding:6px 14px;border-radius:13px;
+  background:linear-gradient(135deg,rgba(13,27,42,.96),var(--navy-600));color:#fff;
+  box-shadow:var(--sh-sm);
+}
+.budget__lbl{font-size:.6rem;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.55);font-weight:700;line-height:1.2;}
+.budget__val{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;color:var(--gold);line-height:1.05;}
+.budget__pp{font-size:.66rem;color:rgba(255,255,255,.62);font-weight:600;}
+.budget__ppl{display:flex;align-items:center;gap:5px;padding-left:11px;border-left:1px solid rgba(255,255,255,.16);}
+.budget__ppl input{width:38px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:7px;
+  color:#fff;text-align:center;font-size:.78rem;font-weight:700;padding:2px 0;}
+.budget__ppl input:focus{outline:none;border-color:var(--gold);}
+.budget__ppl label{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.55);font-weight:700;}
+
+/* Colonnes jours */
+.drawer__body{flex:1;min-height:0;overflow-x:auto;overflow-y:hidden;padding:13px 16px 15px;display:flex;gap:12px;}
+.day{
+  flex:0 0 278px;display:flex;flex-direction:column;min-height:0;
+  background:var(--slate);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;
+  transition:.2s var(--ease);
+}
+.day.is-drop{border-color:var(--gold);background:rgba(212,175,55,.1);box-shadow:0 0 0 3px rgba(212,175,55,.2);}
+.day__head{display:flex;align-items:center;gap:8px;padding:9px 11px;border-bottom:1px solid var(--line);background:#fff;}
+.day__no{width:27px;height:27px;border-radius:9px;background:var(--navy);color:#fff;display:grid;place-items:center;
+  font-size:.74rem;font-weight:800;flex:0 0 auto;}
+.day__name{font-family:'Plus Jakarta Sans';font-size:.84rem;font-weight:800;flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:none;background:transparent;padding:2px 3px;border-radius:6px;}
+.day__name:focus{outline:none;background:var(--slate);box-shadow:0 0 0 2px rgba(27,58,92,.18);}
+.day__sum{font-size:.7rem;font-weight:800;color:var(--gold-600);white-space:nowrap;}
+.day__del{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;color:var(--ink-3);font-size:.72rem;flex:0 0 auto;}
+.day__del:hover{background:rgba(200,16,46,.1);color:var(--red);}
+.day__list{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:7px;min-height:0;}
+.day__empty{flex:1;display:grid;place-items:center;text-align:center;color:var(--ink-3);font-size:.75rem;
+  border:1.5px dashed #D5DCE6;border-radius:11px;padding:14px 10px;margin:8px;line-height:1.45;}
+.day__empty i{display:block;font-size:1.1rem;margin-bottom:5px;color:#C7D0DB;}
+
+.step{
+  flex:0 0 auto;
+  display:flex;align-items:center;gap:8px;padding:7px 8px;background:#fff;border:1px solid var(--line);
+  border-radius:11px;cursor:grab;transition:.18s var(--ease);position:relative;
+}
+.step:hover{border-color:#CBD3DD;box-shadow:var(--sh-sm);}
+.step.is-drag{opacity:.4;}
+.step__ord{width:20px;height:20px;border-radius:6px;background:var(--slate);color:var(--ink-2);
+  display:grid;place-items:center;font-size:.66rem;font-weight:800;flex:0 0 auto;}
+.step__ico{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:.7rem;
+  background:var(--c,var(--navy));flex:0 0 auto;}
+.step__txt{flex:1;min-width:0;}
+.step__txt b{display:block;font-size:.79rem;font-weight:700;line-height:1.25;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.step__txt span{display:block;font-size:.68rem;color:var(--ink-3);font-weight:600;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.step__acts{display:flex;gap:2px;opacity:0;transition:.18s;}
+.step:hover .step__acts{opacity:1;}
+.step__acts button{width:23px;height:23px;border-radius:6px;display:grid;place-items:center;color:var(--ink-3);font-size:.7rem;}
+.step__acts button:hover{background:var(--line-2);color:var(--navy);}
+.step__acts button.del:hover{background:rgba(200,16,46,.1);color:var(--red);}
+/* Sur écrans tactiles il n'y a pas de survol : les actions restent visibles */
+@media (hover:none){ .step__acts{opacity:1;} .card__pin{opacity:1;} }
+
+.dayadd{
+  flex:0 0 92px;border:1.5px dashed #CFD7E2;border-radius:var(--r-lg);background:transparent;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+  color:var(--ink-3);font-size:.76rem;font-weight:700;transition:.2s var(--ease);
+}
+.dayadd:hover{border-color:var(--gold);color:var(--gold-600);background:rgba(212,175,55,.07);}
+.dayadd i{font-size:1.1rem;}
+
+/* =====================================================================
+   MENU JOUR (popover)
+   ===================================================================== */
+.daymenu{
+  position:fixed;z-index:3000;background:#fff;border:1px solid var(--line);border-radius:14px;
+  box-shadow:var(--sh-lg);padding:6px;min-width:186px;display:none;
+}
+.daymenu.is-open{display:block;animation:pop .16s var(--ease);}
+.daymenu__t{font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.13em;color:var(--ink-3);padding:6px 9px 5px;}
+.daymenu button{display:flex;width:100%;align-items:center;gap:9px;padding:8px 9px;border-radius:9px;
+  font-size:.82rem;font-weight:600;text-align:left;transition:.14s;}
+.daymenu button:hover{background:var(--slate);}
+.daymenu button i{width:16px;color:var(--ink-3);}
+.daymenu button b{margin-left:auto;font-size:.68rem;color:var(--ink-3);font-weight:700;}
+.daymenu .sepline{height:1px;background:var(--line-2);margin:5px 4px;}
+.daymenu .newday{color:var(--red);}
+.daymenu .newday i{color:var(--red);}
+
+/* =====================================================================
+   MODAL
+   ===================================================================== */
+.ovl{position:fixed;inset:0;z-index:4000;background:rgba(13,27,42,.55);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;padding:22px;}
+.ovl.is-open{display:flex;animation:fade .2s var(--ease);}
+@keyframes fade{from{opacity:0;}to{opacity:1;}}
+.modal{
+  width:100%;max-width:610px;max-height:min(88vh,820px);background:#fff;border-radius:var(--r-xl);
+  box-shadow:var(--sh-xl);display:flex;flex-direction:column;overflow:hidden;
+  animation:rise .3s var(--ease);
+}
+@keyframes rise{from{opacity:0;transform:translateY(22px) scale(.975);}to{opacity:1;transform:none;}}
+.modal__head{
+  padding:18px 22px;color:#fff;position:relative;flex:0 0 auto;
+  background:radial-gradient(600px 130px at 100% -30%,rgba(212,175,55,.3),transparent 60%),linear-gradient(135deg,#14293F,var(--navy));
+}
+.modal__head h3{font-size:1.32rem;font-weight:800;}
+.modal__head p{margin:3px 0 0;font-size:.79rem;color:rgba(255,255,255,.6);}
+.modal__x{position:absolute;top:15px;right:15px;width:32px;height:32px;border-radius:10px;
+  background:rgba(255,255,255,.1);color:#fff;display:grid;place-items:center;transition:.2s;}
+.modal__x:hover{background:var(--red);transform:rotate(90deg);}
+.modal__body{padding:20px 22px;overflow-y:auto;flex:1;min-height:0;}
+.modal__foot{padding:14px 22px;border-top:1px solid var(--line);display:flex;gap:9px;justify-content:flex-end;
+  background:var(--slate);flex:0 0 auto;}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+.field{margin-bottom:13px;}
+.field label{display:block;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--ink-3);margin-bottom:5px;}
+.field label .req{color:var(--red);}
+.field input,.field select,.field textarea{
+  width:100%;padding:10px 12px;border-radius:11px;border:1px solid var(--line);
+  background:var(--slate);font-size:.88rem;font-weight:500;transition:.18s var(--ease);
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;background:#fff;border-color:var(--navy-600);box-shadow:0 0 0 4px rgba(27,58,92,.1);}
+.field textarea{resize:vertical;min-height:76px;font-family:inherit;}
+.field .hint{font-size:.72rem;color:var(--ink-3);margin-top:5px;display:block;}
+.field .hint b{color:var(--ink-2);}
+.field.has-err input{border-color:var(--red);background:rgba(200,16,46,.04);}
+.inline{display:flex;gap:8px;}
+.inline .btn{flex:0 0 auto;}
+.catpick{display:flex;flex-wrap:wrap;gap:7px;}
+.catpick label{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:11px;
+  border:1px solid var(--line);background:var(--slate);cursor:pointer;font-size:.8rem;font-weight:700;
+  text-transform:none;letter-spacing:0;color:var(--ink-2);margin:0;transition:.18s var(--ease);}
+.catpick label:hover{background:#fff;border-color:#CBD3DD;}
+.catpick input{display:none;}
+.catpick input:checked + span{color:#fff;}
+.catpick label:has(input:checked){background:var(--c);border-color:transparent;color:#fff;box-shadow:0 5px 14px -6px var(--c);}
+.catpick label i{color:var(--c);}
+.catpick label:has(input:checked) i{color:#fff;}
+.preview{height:130px;border-radius:13px;overflow:hidden;background:var(--slate);border:1px dashed var(--line);
+  display:grid;place-items:center;color:var(--ink-3);font-size:.78rem;margin-top:8px;}
+.preview img{width:100%;height:100%;object-fit:cover;}
+
+/* =====================================================================
+   TOASTS
+   ===================================================================== */
+.toasts{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:5000;
+  display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;}
+.toast{
+  display:flex;align-items:center;gap:10px;padding:11px 17px;border-radius:14px;
+  background:var(--navy);color:#fff;box-shadow:var(--sh-lg);font-size:.85rem;font-weight:600;
+  animation:toastIn .32s var(--ease);max-width:min(90vw,460px);
+}
+.toast.out{animation:toastOut .3s var(--ease) forwards;}
+.toast i{font-size:.95rem;}
+.toast.ok i{color:#4ADE80;} .toast.warn i{color:var(--gold);} .toast.err i{color:#FF8FA3;}
+@keyframes toastIn{from{opacity:0;transform:translateY(18px) scale(.94);}to{opacity:1;transform:none;}}
+@keyframes toastOut{to{opacity:0;transform:translateY(14px) scale(.94);}}
+
+/* =====================================================================
+   RESPONSIVE
+   ===================================================================== */
+.tabs{display:none;}
+@media (max-width:1180px){
+  .maplegend{display:none;}
+}
+@media (max-width:1024px){
+  body{font-size:14px;}
+  .main{grid-template-columns:1fr;grid-template-rows:1fr;}
+  .side,.stage{grid-row:1;grid-column:1;}
+  .side{border-right:none;}
+  .side,.stage{display:none;}
+  .side.is-view,.stage.is-view{display:flex;}
+  .tabs{
+    display:flex;flex:0 0 auto;background:#fff;border-top:1px solid var(--line);
+    box-shadow:0 -6px 22px -14px rgba(13,27,42,.4);padding:6px;gap:5px;z-index:1100;
+    padding-bottom:calc(6px + env(safe-area-inset-bottom));
+  }
+  .tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border-radius:12px;
+    font-size:.66rem;font-weight:800;color:var(--ink-3);letter-spacing:.02em;transition:.18s;}
+  .tabs button i{font-size:1.02rem;}
+  .tabs button.is-on{background:var(--navy);color:#fff;}
+  .tabs button .pip{position:absolute;transform:translate(14px,-3px);min-width:16px;height:16px;padding:0 4px;
+    border-radius:99px;background:var(--red);color:#fff;font-size:.6rem;display:grid;place-items:center;font-weight:800;}
+  .drawer{height:auto;flex:1;min-height:0;border-top:none;box-shadow:none;}
+  .drawer.is-collapsed{height:auto;}
+  .drawer__head{cursor:default;}
+  .drawer__grip{display:none;}
+  .stage--planning .mapwrap,.stage--planning .hotelbar{display:none;}
+  .stage--planning{background:#fff;}
+  .stage--planning .drawer__body{flex-direction:column;overflow-x:hidden;overflow-y:auto;}
+  .stage--planning .day{flex:0 0 auto;width:100%;}
+  .stage--planning .day__list{overflow:visible;}
+  .stage--planning .dayadd{flex:0 0 auto;width:100%;min-height:74px;flex-direction:row;}
+  .stage--planning .dayadd br{display:none;}
+  .stage--planning .drawer__head{height:auto;min-height:56px;flex-wrap:wrap;padding:10px 14px;}
+  .stage--planning .budget__ppl{display:flex;}
+  .hd{padding:0 13px;gap:9px;}
+  .hd__stat{display:none;}
+  .hd__sub{display:none;}
+  .hd__title{font-size:1.1rem;}
+  .hd__lbl{display:none;}
+  .btn--sm-mob{padding:.5em;width:38px;height:38px;}
+}
+@media (max-width:560px){
+  .hotelbar{flex-wrap:wrap;}
+  .hotelbar__mode{width:100%;}
+  .hotelbar__mode button{flex:1;}
+  .grid2{grid-template-columns:1fr;}
+  .day{flex:0 0 84vw;}
+  .budget__ppl{display:none;}
+  .modal__foot{flex-direction:column-reverse;}
+  .modal__foot .btn{width:100%;}
+}
+
+/* =====================================================================
+   IMPRESSION / EXPORT
+   ===================================================================== */
+.printsheet{display:none;}
+@media print{
+  body{overflow:visible;background:#fff;}
+  .app,.toasts,.ovl,.daymenu{display:none!important;}
+  .printsheet{display:block;padding:0;font-size:11.5px;}
+  @page{margin:14mm;}
+}
+.printsheet h1{font-size:26px;margin-bottom:2px;}
+.ps__head{border-bottom:3px solid var(--navy);padding-bottom:10px;margin-bottom:14px;
+  display:flex;justify-content:space-between;align-items:flex-end;}
+.ps__head .sub{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7A8899;font-weight:700;}
+.ps__badge{text-align:right;}
+.ps__badge b{display:block;font-family:'Playfair Display',serif;font-size:22px;color:var(--red);}
+.ps__badge span{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#7A8899;font-weight:700;}
+.ps__hotel{background:#F3F5F8;border-left:4px solid var(--gold);padding:8px 12px;margin-bottom:14px;font-size:12px;}
+.ps__day{margin-bottom:16px;break-inside:avoid;}
+.ps__day h3{font-size:15px;border-bottom:1px solid #DDE3EA;padding-bottom:5px;margin-bottom:7px;
+  display:flex;justify-content:space-between;}
+.ps__day h3 span{font-family:'Plus Jakarta Sans';font-size:11px;color:var(--gold-600);font-weight:800;}
+.ps__row{display:flex;gap:9px;padding:5px 0;border-bottom:1px dotted #E4E8EE;}
+.ps__row .n{width:17px;height:17px;border-radius:5px;background:var(--navy);color:#fff;font-size:9px;
+  display:grid;place-items:center;font-weight:800;flex:0 0 auto;margin-top:1px;}
+.ps__row .t{flex:1;}
+.ps__row .t b{font-size:12px;}
+.ps__row .t span{display:block;font-size:10px;color:#7A8899;}
+.ps__row .p{font-weight:800;font-size:11.5px;}
+.ps__foot{margin-top:16px;padding-top:9px;border-top:2px solid var(--navy);display:flex;justify-content:space-between;
+  font-size:12px;font-weight:700;}
+.ps__foot .tot{font-family:'Playfair Display',serif;font-size:19px;color:var(--red);}
+
+/* Utilitaires */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+.spin{display:inline-block;animation:sp .8s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============================ HEADER ============================ -->
+  <header class="hd">
+    <div class="hd__brand">
+      <div class="hd__crest"><i class="fa-solid fa-crown"></i></div>
+      <div class="hd__titles">
+        <div class="hd__title">London <em>Trip</em> Planner</div>
+        <div class="hd__sub">Explore · Plan · Savour</div>
+      </div>
+    </div>
+
+    <div class="hd__spacer"></div>
+
+    <div class="hd__stat">
+      <b id="statSpots">0</b><span>Étapes</span>
+    </div>
+    <div class="hd__stat" style="border-right:none;">
+      <b id="statBudget">£0</b><span>Budget</span>
+    </div>
+
+    <div class="hd__actions">
+      <button class="btn btn--ghost btn--sm-mob" id="btnAdd" title="Ajouter une activité personnalisée">
+        <i class="fa-solid fa-plus"></i><span class="hd__lbl">Ajouter une activité</span>
+      </button>
+      <button class="btn btn--gold btn--sm-mob" id="btnExport" title="Exporter / imprimer le planning">
+        <i class="fa-solid fa-file-arrow-down"></i><span class="hd__lbl">Exporter</span>
+      </button>
+      <button class="btn btn--ghost btn--icon" id="btnReset" title="Réinitialiser le voyage">
+        <i class="fa-solid fa-rotate-left"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============================ MAIN ============================ -->
+  <div class="main">
+
+    <!-- ---------------------- SIDEBAR ---------------------- -->
+    <aside class="side is-view" id="side">
+      <div class="side__filters">
+        <div class="search" id="searchWrap">
+          <i class="fa-solid fa-magnifying-glass search__ico"></i>
+          <input type="search" id="q" placeholder="Rechercher un lieu, un quartier, une envie…" autocomplete="off" aria-label="Rechercher une activité">
+          <button class="search__clear" id="qClear" aria-label="Effacer la recherche"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="fgroup" id="grpCat">
+          <div class="fgroup__head">
+            <span class="fgroup__title"><i class="fa-solid fa-layer-group"></i> Catégories</span>
+            <button class="fgroup__reset" data-reset="cat">Tout afficher</button>
+          </div>
+          <div class="chips" id="catChips"></div>
+        </div>
+
+        <div class="fgroup" id="grpPrice">
+          <div class="fgroup__head">
+            <span class="fgroup__title"><i class="fa-solid fa-sterling-sign"></i> Budget</span>
+            <button class="fgroup__reset" data-reset="price">Tout afficher</button>
+          </div>
+          <div class="chips" id="priceChips"></div>
+        </div>
+      </div>
+
+      <div class="side__bar">
+        <span><b id="resCount">0</b> activité(s) · <span id="resFree">0</span> gratuite(s)</span>
+        <select class="sortsel" id="sortSel" aria-label="Trier les activités">
+          <option value="reco">Tri : Recommandé</option>
+          <option value="note">Note ↓</option>
+          <option value="prixA">Prix ↑</option>
+          <option value="prixD">Prix ↓</option>
+          <option value="dist">Distance / hôtel</option>
+          <option value="az">A → Z</option>
+        </select>
+      </div>
+
+      <div class="side__list scroll" id="list"></div>
+    </aside>
+
+    <!-- ---------------------- STAGE ---------------------- -->
+    <section class="stage is-view" id="stage">
+
+      <!-- Barre hôtel -->
+      <div class="hotelbar">
+        <div class="hotelbar__field">
+          <i class="fa-solid fa-bed hotelbar__ico"></i>
+          <input type="text" id="hotelInput" placeholder="Votre hôtel ou point de départ à Londres…" autocomplete="off" aria-label="Adresse de l'hôtel">
+          <button class="btn btn--primary btn--sm hotelbar__go" id="hotelGo"><i class="fa-solid fa-location-crosshairs"></i> Localiser</button>
+          <div class="geolist scroll" id="geoList" role="listbox"></div>
+        </div>
+        <div class="hotelchip" id="hotelChip">
+          <i class="fa-solid fa-bed"></i><span id="hotelChipName"></span>
+          <button id="hotelClear" title="Retirer l'hôtel"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="hotelbar__mode" role="group" aria-label="Mode de transport">
+          <button data-mode="transit" class="is-on"><i class="fa-solid fa-train-subway"></i> Transports</button>
+          <button data-mode="walking"><i class="fa-solid fa-person-walking"></i> À pied</button>
+        </div>
+      </div>
+
+      <!-- Carte -->
+      <div class="mapwrap">
+        <div id="map"></div>
+        <div class="mapctl">
+          <button id="mcFit" title="Voir toutes les activités"><i class="fa-solid fa-expand"></i></button>
+          <button id="mcHotel" title="Centrer sur l'hôtel"><i class="fa-solid fa-bed"></i></button>
+          <button id="mcPlan" title="Afficher uniquement le planning"><i class="fa-solid fa-list-check"></i></button>
+        </div>
+        <div class="maplegend" id="legend">
+          <h5>Légende</h5>
+          <ul id="legendList"></ul>
+          <button class="tog" id="legendTog"><i class="fa-solid fa-chevron-down"></i> Réduire</button>
+        </div>
+      </div>
+
+      <!-- Drawer planning -->
+      <div class="drawer" id="drawer">
+        <div class="drawer__head" id="drawerHead">
+          <div class="drawer__grip"><i class="fa-solid fa-chevron-down"></i></div>
+          <div class="drawer__title">
+            <i class="fa-solid fa-route" style="color:var(--red);font-size:.95rem;"></i>
+            Mon planning
+            <span class="drawer__count" id="planCount">0 étapes</span>
+          </div>
+          <div class="drawer__spacer"></div>
+          <div class="budget">
+            <div>
+              <div class="budget__lbl">Budget estimé</div>
+              <div class="budget__val" id="budgetVal">£0</div>
+            </div>
+            <div class="budget__ppl">
+              <div>
+                <label for="ppl">Pers.</label>
+                <input type="number" id="ppl" min="1" max="20" value="1">
+              </div>
+              <div class="budget__pp" id="budgetTotal">Total £0</div>
+            </div>
+          </div>
+        </div>
+        <div class="drawer__body scroll" id="days"></div>
+      </div>
+
+    </section>
+
+    <!-- Onglets mobile -->
+    <nav class="tabs" id="tabs">
+      <button data-view="side" class="is-on"><i class="fa-solid fa-compass"></i>Explorer</button>
+      <button data-view="stage"><i class="fa-solid fa-map-location-dot"></i>Carte</button>
+      <button data-view="planning"><i class="fa-solid fa-route"></i>Planning<span class="pip" id="tabPip" hidden>0</span></button>
+    </nav>
+
+  </div>
+</div>
+
+<!-- ============================ MODAL ACTIVITÉ ============================ -->
+<div class="ovl" id="ovl">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mdTitle">
+    <div class="modal__head">
+      <h3 id="mdTitle">Ajouter une pépite</h3>
+      <p>Une adresse perso, un bon plan trouvé sur place… ajoutez-le à votre carte.</p>
+      <button class="modal__x" id="mdClose" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal__body scroll">
+      <form id="actForm" autocomplete="off">
+        <input type="hidden" id="fId">
+        <div class="field">
+          <label for="fTitle">Nom du lieu <span class="req">*</span></label>
+          <input type="text" id="fTitle" placeholder="Ex : Maltby Street Market" required>
+        </div>
+
+        <div class="field">
+          <label>Catégorie <span class="req">*</span></label>
+          <div class="catpick" id="fCats"></div>
+        </div>
+
+        <div class="grid2">
+          <div class="field">
+            <label for="fPrice">Prix moyen (£)</label>
+            <input type="number" id="fPrice" min="0" step="0.5" value="0" placeholder="0">
+            <span class="hint">0 = gratuit</span>
+          </div>
+          <div class="field">
+            <label for="fDur">Durée conseillée</label>
+            <input type="text" id="fDur" placeholder="Ex : 1h30">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="fAddr">Adresse (géocodage automatique)</label>
+          <div class="inline">
+            <input type="text" id="fAddr" placeholder="Ex : 41 Maltby St, London SE1 3PA">
+            <button type="button" class="btn" id="fGeo"><i class="fa-solid fa-location-dot"></i> Trouver</button>
+          </div>
+          <span class="hint">Ou renseignez directement les coordonnées ci-dessous.</span>
+        </div>
+
+        <div class="grid2">
+          <div class="field">
+            <label for="fLat">Latitude <span class="req">*</span></label>
+            <input type="number" id="fLat" step="0.000001" placeholder="51.5074" required>
+          </div>
+          <div class="field">
+            <label for="fLng">Longitude <span class="req">*</span></label>
+            <input type="number" id="fLng" step="0.000001" placeholder="-0.1278" required>
+          </div>
+        </div>
+        <div class="field" style="margin-top:-4px;">
+          <span class="hint"><b>Astuce :</b> vous pouvez aussi cliquer sur <i class="fa-solid fa-location-crosshairs"></i> puis choisir un point sur la carte.</span>
+          <button type="button" class="btn btn--sm" id="fPick" style="margin-top:7px;"><i class="fa-solid fa-crosshairs"></i> Choisir sur la carte</button>
+        </div>
+
+        <div class="field">
+          <label for="fImg">Photo (URL)</label>
+          <input type="url" id="fImg" placeholder="https://images.unsplash.com/…">
+          <div class="preview" id="fPrev"><span><i class="fa-regular fa-image"></i> Aperçu de la photo</span></div>
+        </div>
+
+        <div class="field">
+          <label for="fDesc">Description</label>
+          <textarea id="fDesc" placeholder="Ce qui rend l'endroit spécial…"></textarea>
+        </div>
+
+        <div class="field" style="margin-bottom:0;">
+          <label for="fDay">Ajouter directement au planning</label>
+          <select id="fDay"></select>
+        </div>
+      </form>
+    </div>
+    <div class="modal__foot">
+      <button class="btn" id="mdCancel">Annuler</button>
+      <button class="btn btn--primary" id="mdSave"><i class="fa-solid fa-check"></i> Enregistrer l'activité</button>
+    </div>
+  </div>
+</div>
+
+<!-- Menu contextuel « ajouter au jour » -->
+<div class="daymenu" id="dayMenu"></div>
+
+<!-- Toasts -->
+<div class="toasts" id="toasts"></div>
+
+<!-- Feuille d'impression -->
+<div class="printsheet" id="printSheet"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+/* =====================================================================
+   LONDON TRIP PLANNER — Application
+   Architecture :
+     1. Constantes & jeu de données
+     2. État applicatif + persistance LocalStorage
+     3. Utilitaires (formatage, distance, toasts…)
+     4. Filtres & rendu de la sidebar
+     5. Carte Leaflet (marqueurs, hôtel, géocodage, itinéraires)
+     6. Planning (jours, drag & drop, budget)
+     7. Modal d'ajout d'activité
+     8. Export / impression
+     9. Initialisation & évènements
+   ===================================================================== */
+(function () {
+'use strict';
+
+/* =====================================================================
+   1. CONSTANTES & DONNÉES
+   ===================================================================== */
+
+const LS_KEY = 'london-trip-planner:v1';
+
+/** Catégories d'activités (clé, libellé, icône FA, couleur) */
+const CATS = {
+  musee:    { label:'Musées',          short:'Musée',     icon:'fa-landmark-dome',          color:'#2F5D8C' },
+  food:     { label:'Food & Street',   short:'Food',      icon:'fa-utensils',               color:'#C8102E' },
+  panorama: { label:'Panoramas',       short:'Panorama',  icon:'fa-city',                   color:'#0F8B8D' },
+  insolite: { label:'Insolite',        short:'Insolite',  icon:'fa-wand-magic-sparkles',    color:'#7C4DBE' },
+  monument: { label:'Monuments',       short:'Monument',  icon:'fa-monument',               color:'#B8860B' },
+  nuit:     { label:'Vie nocturne',    short:'Nuit',      icon:'fa-martini-glass-citrus',   color:'#D4468A' }
+};
+
+/** Tranches de prix */
+const PRICES = {
+  free:    { label:'Gratuit',        icon:'fa-gift',          color:'#0F8B8D', test:p => p === 0 },
+  eco:     { label:'< £15',          icon:'fa-sterling-sign', color:'#2F5D8C', test:p => p > 0 && p < 15 },
+  mid:     { label:'£15 – £30',      icon:'fa-coins',         color:'#B8860B', test:p => p >= 15 && p <= 30 },
+  premium: { label:'> £30',          icon:'fa-gem',           color:'#7C4DBE', test:p => p > 30 }
+};
+
+const U = 'https://images.unsplash.com/photo-';
+const IMG = s => U + s + '?auto=format&fit=crop&w=800&q=80';
+
+/** Jeu de données initial : 15 activités londoniennes réelles (GPS, tarifs 2026) */
+const SEED = [
+  {
+    id:'sky-garden', title:'Sky Garden', cat:'panorama', price:0, rating:4.6,
+    lat:51.5111, lng:-0.0836, area:'City of London', duration:'1h30',
+    img:IMG('1674738603277-431849200e66'),
+    desc:"Le « jardin suspendu » du Walkie-Talkie : trois étages de plantes exotiques et une vue à 360° sur la Tamise, la Tower Bridge et le Shard.",
+    tip:"Réservation en ligne gratuite obligatoire, ouverte 3 semaines à l'avance. Visez le créneau du coucher de soleil."
+  },
+  {
+    id:'horizon-22', title:'Horizon 22', cat:'panorama', price:0, rating:4.8,
+    lat:51.5150, lng:-0.0817, area:'Bishopsgate', duration:'1h',
+    img:IMG('1582549027166-3f170630083b'),
+    desc:"Le plus haut point de vue gratuit d'Europe, au 58ᵉ étage du 22 Bishopsgate. Baies vitrées vertigineuses et panorama imprenable sur la City.",
+    tip:"Créneaux gratuits libérés chaque semaine : mettez un rappel, ils partent en quelques heures."
+  },
+  {
+    id:'borough-market', title:'Borough Market', cat:'food', price:15, rating:4.7,
+    lat:51.5055, lng:-0.0910, area:'Southwark', duration:'1h30',
+    img:IMG('1599033183537-54ff77f58f75'),
+    desc:"Le plus ancien marché alimentaire de Londres (XIIᵉ siècle) : fromages affinés, huîtres, grilled cheese mythique de Kappacasein et street food du monde entier.",
+    tip:"Évitez le samedi midi. Le jeudi matin reste le meilleur compromis affluence / étals complets."
+  },
+  {
+    id:'seven-dials', title:'Seven Dials Market', cat:'food', price:12, rating:4.5,
+    lat:51.5140, lng:-0.1262, area:'Covent Garden', duration:'1h',
+    img:IMG('1776870175211-3421678015b7'),
+    desc:"Ancien entrepôt à bananes reconverti en food hall design : 20 comptoirs, un bar central et le fameux Pick & Cheese à sushi-bar de fromages.",
+    tip:"Le sous-sol « Cucumber Alley » est plus calme et souvent oublié des touristes."
+  },
+  {
+    id:'camden-market', title:'Camden Market', cat:'food', price:14, rating:4.4,
+    lat:51.5414, lng:-0.1460, area:'Camden Town', duration:'2h',
+    img:IMG('1527596615124-8b23ab91882f'),
+    desc:"Le repaire alternatif de Londres : friperies, boutiques punk et plus de 100 stands de cuisine du monde le long du Regent's Canal.",
+    tip:"Enchaînez avec une balade jusqu'à Little Venice le long du canal (45 min, gratuit)."
+  },
+  {
+    id:'british-museum', title:'British Museum', cat:'musee', price:0, rating:4.8,
+    lat:51.5194, lng:-0.1270, area:'Bloomsbury', duration:'3h',
+    img:IMG('1534235826754-0a3572d1d6d5'),
+    desc:"Pierre de Rosette, marbres du Parthénon, momies égyptiennes : huit millions d'objets sous la spectaculaire verrière de la Great Court.",
+    tip:"Entrée libre. Ciblez 2 ou 3 galeries maximum, sinon l'overdose est garantie."
+  },
+  {
+    id:'tate-modern', title:'Tate Modern', cat:'musee', price:0, rating:4.6,
+    lat:51.5076, lng:-0.0994, area:'Bankside', duration:'2h',
+    img:IMG('1518280931106-62b0569560c9'),
+    desc:"Ancienne centrale électrique devenue temple de l'art moderne : Rothko, Picasso, Warhol, et l'immense Turbine Hall.",
+    tip:"Le Viewing Level du Blavatnik Building offre une vue gratuite sur St Paul's et la Tamise."
+  },
+  {
+    id:'tower-of-london', title:'Tower of London', cat:'monument', price:33, rating:4.6,
+    lat:51.5081, lng:-0.0759, area:'Tower Hill', duration:'3h',
+    img:IMG('1558361143-c3871caca80b'),
+    desc:"Mille ans d'histoire, les Joyaux de la Couronne, les corbeaux et les Yeoman Warders : la forteresse la plus célèbre du Royaume-Uni.",
+    tip:"Arrivez à l'ouverture (9h) et filez directement aux Joyaux avant la file d'attente."
+  },
+  {
+    id:'westminster-abbey', title:'Westminster Abbey', cat:'monument', price:29, rating:4.7,
+    lat:51.4994, lng:-0.1273, area:'Westminster', duration:'1h30',
+    img:IMG('1534011640498-530cfd0e854a'),
+    desc:"Lieu de couronnement des souverains britanniques depuis 1066, gothique flamboyant et Poets' Corner où reposent Dickens et Darwin.",
+    tip:"L'Evensong de fin d'après-midi est gratuit : la nef, les chœurs, sans le ticket."
+  },
+  {
+    id:'gods-own-junkyard', title:"God's Own Junkyard", cat:'insolite', price:0, rating:4.7,
+    lat:51.5873, lng:-0.0106, area:'Walthamstow', duration:'1h',
+    img:IMG('1709483076384-7ee2b12f57d7'),
+    desc:"Un hangar saturé de centaines d'enseignes néon vintage, décors de films et sculptures lumineuses. Le spot photo le plus électrique de Londres.",
+    tip:"Ouvert seulement du vendredi au dimanche. Entrée gratuite, café-bar sur place (Rolling Scones)."
+  },
+  {
+    id:'dennis-severs', title:"Dennis Severs' House", cat:'insolite', price:16, rating:4.7,
+    lat:51.5211, lng:-0.0754, area:'Spitalfields', duration:'1h',
+    img:IMG('1701199669209-f2ae436a66ad'),
+    desc:"Une maison géorgienne figée au XVIIIᵉ siècle : visite en silence, à la bougie, comme si les habitants venaient de quitter la pièce.",
+    tip:"Les soirées « Silent Night » à la chandelle sont l'expérience ultime — réservation indispensable."
+  },
+  {
+    id:'leake-street', title:'Leake Street Arches', cat:'insolite', price:0, rating:4.4,
+    lat:51.5011, lng:-0.1148, area:'Waterloo', duration:'45 min',
+    img:IMG('1486892539609-d5322f938c50'),
+    desc:"Le tunnel du graffiti légal ouvert par Banksy : 300 mètres de fresques repeintes chaque semaine, sous les rails de Waterloo.",
+    tip:"Gratuit, ouvert 24h/24. Bars et pizzerias installés directement dans les arches."
+  },
+  {
+    id:'cahoots', title:'Cahoots', cat:'nuit', price:20, rating:4.5,
+    lat:51.5136, lng:-0.1345, area:'Soho', duration:'2h',
+    img:IMG('1775955849483-5992deefbed3'),
+    desc:"Un bar à cocktails installé dans une fausse station de métro des années 1940 : rame d'époque, swing et barmen en uniforme.",
+    tip:"Réservez, et jouez le jeu du dress-code rétro — le personnel adore."
+  },
+  {
+    id:'fabric', title:'fabric', cat:'nuit', price:25, rating:4.3,
+    lat:51.5197, lng:-0.1024, area:'Farringdon', duration:'5h',
+    img:IMG('1763630054758-637ff31b4a4d'),
+    desc:"Club culte depuis 1999 sous les anciennes chambres froides de Smithfield : trois salles et le mythique bodysonic dancefloor.",
+    tip:"Billets moins chers en prévente. Les nuits FABRICLIVE du vendredi sont les plus accessibles."
+  },
+  {
+    id:'sketch-gallery', title:'Sketch — The Gallery', cat:'insolite', price:70, rating:4.4,
+    lat:51.5127, lng:-0.1417, area:'Mayfair', duration:'2h',
+    img:IMG('1768464706123-8eb92de776af'),
+    desc:"Le salon rose bonbon signé India Mahdavi, ses dessins de David Shrigley et ses toilettes-œufs futuristes. Afternoon tea le plus instagrammé du monde.",
+    tip:"Le tarif couvre l'afternoon tea complet. Réservation 1 à 2 mois à l'avance."
+  }
+];
+
+/* =====================================================================
+   2. ÉTAT & PERSISTANCE
+   ===================================================================== */
+
+const defaultState = () => ({
+  custom: [],                                   // activités ajoutées par l'utilisateur
+  hidden: [],                                   // ids d'activités du seed supprimées
+  days: [                                       // planning
+    { id:'d1', name:'Jour 1', items:[] },
+    { id:'d2', name:'Jour 2', items:[] },
+    { id:'d3', name:'Jour 3', items:[] },
+    { id:'d4', name:'Jour 4', items:[] }
+  ],
+  hotel: null,                                  // { name, label, lat, lng }
+  mode: 'transit',                              // transit | walking
+  people: 1,
+  drawerOpen: true
+});
+
+let S = defaultState();
+
+/** Filtres (non persistés : on repart toujours d'une vue complète) */
+const F = { q:'', cats:new Set(), prices:new Set(), sort:'reco', onlyPlan:false };
+
+function save(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }
+  catch(e){ console.warn('Sauvegarde impossible', e); }
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return;
+    const parsed = JSON.parse(raw);
+    S = Object.assign(defaultState(), parsed);
+    if(!Array.isArray(S.days) || !S.days.length) S.days = defaultState().days;
+    S.days.forEach(d => { if(!Array.isArray(d.items)) d.items = []; });
+  }catch(e){ console.warn('Lecture du stockage impossible', e); }
+}
+
+/** Toutes les activités visibles = seed (moins les masquées) + personnalisées */
+function allActivities(){
+  return SEED.filter(a => !S.hidden.includes(a.id)).concat(S.custom);
+}
+function getActivity(id){
+  return allActivities().find(a => a.id === id) || null;
+}
+
+/* =====================================================================
+   3. UTILITAIRES
+   ===================================================================== */
+
+const $  = (sel, ctx) => (ctx || document).querySelector(sel);
+const $$ = (sel, ctx) => Array.prototype.slice.call((ctx || document).querySelectorAll(sel));
+
+const uid = () => 'x' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3);
+
+/** Échappement HTML (les activités personnalisées sont saisies par l'utilisateur) */
+function esc(str){
+  return String(str == null ? '' : str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+/** Normalisation pour la recherche (sans accents, minuscules) */
+function norm(str){
+  return String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+/** Formatage prix */
+function money(p){
+  if(!p) return 'Gratuit';
+  return '£' + (Number(p) % 1 === 0 ? Number(p) : Number(p).toFixed(2));
+}
+function moneyShort(p){ return '£' + (Number(p) % 1 === 0 ? Number(p) : Number(p).toFixed(2)); }
+
+/** Tranche de prix d'un tarif */
+function priceTier(p){
+  for(const k in PRICES){ if(PRICES[k].test(Number(p) || 0)) return k; }
+  return 'free';
+}
+/** Étoiles */
+function stars(n){
+  const full = Math.floor(n), half = n - full >= .5;
+  let out = '';
+  for(let i=0;i<5;i++){
+    out += i < full ? '<i class="fa-solid fa-star"></i>'
+        : (i === full && half ? '<i class="fa-solid fa-star-half-stroke"></i>' : '<i class="fa-regular fa-star"></i>');
+  }
+  return out;
+}
+/** Distance haversine en km */
+function distKm(a, b){
+  if(!a || !b) return null;
+  const R = 6371, toRad = d => d * Math.PI / 180;
+  const dLat = toRad(b.lat - a.lat), dLng = toRad(b.lng - a.lng);
+  const s = Math.sin(dLat/2)**2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+function fmtDist(km){
+  if(km == null) return '';
+  return km < 1 ? Math.round(km * 1000) + ' m' : km.toFixed(1) + ' km';
+}
+
+/** Notifications */
+let toastTimer = [];
+function toast(msg, type, icon){
+  const box = $('#toasts');
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type || 'ok');
+  el.innerHTML = '<i class="fa-solid ' + (icon || (type === 'err' ? 'fa-circle-exclamation'
+                 : type === 'warn' ? 'fa-triangle-exclamation' : 'fa-circle-check')) + '"></i><span>' + msg + '</span>';
+  box.appendChild(el);
+  const t = setTimeout(() => {
+    el.classList.add('out');
+    setTimeout(() => el.remove(), 320);
+  }, 3000);
+  toastTimer.push(t);
+  if(box.children.length > 3) box.firstElementChild.remove();
+}
+
+/** Fallback d'image élégant si l'URL distante échoue */
+window.imgFallback = function(img){
+  const wrap = img.parentElement;
+  const cat  = img.dataset.cat || 'monument';
+  const c    = (CATS[cat] || CATS.monument);
+  img.remove();
+  const fb = document.createElement('div');
+  fb.className = 'imgfb';
+  fb.style.setProperty('--c', c.color);
+  fb.innerHTML = '<i class="fa-solid ' + c.icon + '"></i>';
+  wrap.insertBefore(fb, wrap.firstChild);
+};
+
+/** Lien Google Maps « itinéraire » */
+function directionsUrl(act){
+  const dest = act.lat + ',' + act.lng;
+  const base = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(dest)
+             + '&travelmode=' + (S.mode === 'walking' ? 'walking' : 'transit');
+  if(S.hotel) return base + '&origin=' + encodeURIComponent(S.hotel.lat + ',' + S.hotel.lng);
+  return base;
+}
+function openDirections(act){
+  if(!S.hotel){
+    toast("Indiquez d'abord votre hôtel pour un itinéraire précis.", 'warn');
+    $('#hotelInput').focus();
+  }
+  window.open(directionsUrl(act), '_blank', 'noopener');
+}
+
+/* =====================================================================
+   4. FILTRES & SIDEBAR
+   ===================================================================== */
+
+function buildChips(){
+  $('#catChips').innerHTML = Object.keys(CATS).map(k => {
+    const c = CATS[k];
+    return '<button class="chip" data-cat="' + k + '" style="--c:' + c.color + '">'
+         + '<i class="fa-solid ' + c.icon + '"></i>' + c.label + '</button>';
+  }).join('');
+
+  $('#priceChips').innerHTML = Object.keys(PRICES).map(k => {
+    const p = PRICES[k];
+    return '<button class="chip" data-price="' + k + '" style="--c:' + p.color + '">'
+         + '<i class="fa-solid ' + p.icon + '"></i>' + p.label + '</button>';
+  }).join('');
+
+  $('#legendList').innerHTML = Object.keys(CATS).map(k =>
+    '<li><span class="dot" style="--c:' + CATS[k].color + '"></span>' + CATS[k].short + '</li>').join('');
+}
+
+/** Applique recherche + filtres + tri */
+function filtered(){
+  const q = norm(F.q);
+  let list = allActivities().filter(a => {
+    if(F.cats.size && !F.cats.has(a.cat)) return false;
+    if(F.prices.size && !F.prices.has(priceTier(a.price))) return false;
+    if(q){
+      const hay = norm([a.title, a.desc, a.area, a.tip, CATS[a.cat] && CATS[a.cat].label].join(' '));
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  const planned = plannedIds();
+  const sorters = {
+    reco:  (a,b) => (b.rating - a.rating) || (a.price - b.price),
+    note:  (a,b) => b.rating - a.rating,
+    prixA: (a,b) => a.price - b.price,
+    prixD: (a,b) => b.price - a.price,
+    az:    (a,b) => a.title.localeCompare(b.title, 'fr'),
+    dist:  (a,b) => {
+      if(!S.hotel) return 0;
+      return (distKm(S.hotel, a) || 0) - (distKm(S.hotel, b) || 0);
+    }
+  };
+  list.sort(sorters[F.sort] || sorters.reco);
+  if(F.onlyPlan) list = list.filter(a => planned.has(a.id));
+  return list;
+}
+
+/** Ids présents dans le planning */
+function plannedIds(){
+  const set = new Set();
+  S.days.forEach(d => d.items.forEach(i => set.add(i.aid)));
+  return set;
+}
+
+function renderList(){
+  const list = filtered();
+  const planned = plannedIds();
+  const box = $('#list');
+
+  $('#resCount').textContent = list.length;
+  $('#resFree').textContent  = list.filter(a => !a.price).length;
+  $('#grpCat').classList.toggle('is-active', F.cats.size > 0);
+  $('#grpPrice').classList.toggle('is-active', F.prices.size > 0);
+
+  if(!list.length){
+    box.innerHTML = '<div class="empty"><i class="fa-solid fa-binoculars"></i>'
+      + '<h4>Aucune activité trouvée</h4><p>Essayez d\'élargir vos filtres ou ajoutez votre propre pépite.</p>'
+      + '<button class="btn btn--primary" id="emptyAdd"><i class="fa-solid fa-plus"></i> Ajouter une activité</button></div>';
+    const b = $('#emptyAdd'); if(b) b.onclick = () => openModal();
+    return;
+  }
+
+  box.innerHTML = list.map(a => {
+    const c = CATS[a.cat] || CATS.monument;
+    const d = S.hotel ? distKm(S.hotel, a) : null;
+    return ''
+    + '<article class="card' + (planned.has(a.id) ? ' is-planned' : '') + '" data-id="' + esc(a.id) + '" style="--c:' + c.color + '">'
+    +   '<div class="card__media">'
+    +     '<img src="' + esc(a.img) + '" alt="' + esc(a.title) + '" loading="lazy" data-cat="' + esc(a.cat) + '" onerror="imgFallback(this)">'
+    +     '<span class="card__badge"><i class="fa-solid ' + c.icon + '"></i>' + c.short + '</span>'
+    +     (a.custom ? '<span class="card__custom">Perso</span>' : '')
+    +     '<button class="card__pin" data-act="locate" title="Voir sur la carte"><i class="fa-solid fa-location-dot"></i></button>'
+    +     '<span class="card__price' + (a.price ? '' : ' is-free') + '">' + money(a.price) + '</span>'
+    +     '<span class="card__rate"><i class="fa-solid fa-star"></i>' + a.rating.toFixed(1) + '</span>'
+    +   '</div>'
+    +   '<div class="card__body">'
+    +     '<h3 class="card__title">' + esc(a.title) + '</h3>'
+    +     '<div class="card__meta">'
+    +       '<span class="stars" style="color:var(--gold)">' + stars(a.rating) + '</span>'
+    +       '<span class="sep"></span><span><i class="fa-regular fa-clock"></i>' + esc(a.duration || '1h') + '</span>'
+    +       '<span class="sep"></span><span><i class="fa-solid fa-location-dot"></i>' + esc(a.area || 'Londres') + '</span>'
+    +       (d != null ? '<span class="sep"></span><span style="color:var(--gold-600)"><i class="fa-solid fa-bed"></i>' + fmtDist(d) + '</span>' : '')
+    +     '</div>'
+    +     '<p class="card__desc">' + esc(a.desc) + '</p>'
+    +     (a.tip ? '<div class="card__tip"><i class="fa-solid fa-lightbulb"></i><span>' + esc(a.tip) + '</span></div>' : '')
+    +     '<div class="card__actions">'
+    +       '<button class="btn btn--sm btn--primary" data-act="plan"><i class="fa-solid fa-calendar-plus"></i> Planifier</button>'
+    +       '<button class="btn btn--sm" data-act="route"><i class="fa-solid fa-diamond-turn-right"></i> Itinéraire</button>'
+    +       (a.custom ? '<button class="btn btn--sm btn--icon" data-act="edit" title="Modifier"><i class="fa-solid fa-pen"></i></button>' : '')
+    +       '<button class="btn btn--sm btn--icon" data-act="remove" title="Masquer cette activité"><i class="fa-solid fa-trash-can"></i></button>'
+    +     '</div>'
+    +   '</div>'
+    + '</article>';
+  }).join('');
+}
+
+/* =====================================================================
+   5. CARTE LEAFLET
+   ===================================================================== */
+
+let map, markerLayer, markers = {}, hotelMarker = null, linkLine = null;
+let activeId = null, pickMode = false;
+
+function initMap(){
+  // Dégradation élégante si le CDN Leaflet n'est pas joignable :
+  // l'application (liste, filtres, planning, budget) reste 100 % utilisable.
+  if(typeof L === 'undefined'){
+    $('#map').innerHTML = '<div class="empty" style="height:100%;display:grid;place-content:center;">'
+      + '<i class="fa-solid fa-map-location-dot"></i><h4>Carte indisponible</h4>'
+      + '<p>La librairie cartographique n\'a pas pu être chargée.<br>Vérifiez votre connexion — le reste du planner fonctionne normalement.</p></div>';
+    return;
+  }
+  map = L.map('map', {
+    center:[51.5099, -0.1180], zoom:12, zoomControl:false,
+    scrollWheelZoom:true, attributionControl:true
+  });
+  L.control.zoom({ position:'bottomright' }).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom:19, attribution:'&copy; OpenStreetMap'
+  }).addTo(map);
+
+  markerLayer = L.layerGroup().addTo(map);
+
+  // Sélection d'un point pour le formulaire
+  map.on('click', e => {
+    if(!pickMode) return;
+    $('#fLat').value = e.latlng.lat.toFixed(6);
+    $('#fLng').value = e.latlng.lng.toFixed(6);
+    endPick();
+    toast('Coordonnées récupérées depuis la carte.', 'ok', 'fa-crosshairs');
+  });
+
+  renderMarkers();
+}
+
+function catIcon(act, order){
+  const c = CATS[act.cat] || CATS.monument;
+  return L.divIcon({
+    className:'mk-wrap',
+    html:'<div class="mk" style="--c:' + c.color + '"><i class="fa-solid ' + c.icon + '"></i></div>'
+         + (order ? '<span class="mk-num">' + order + '</span>' : ''),
+    iconSize:[36,36], iconAnchor:[18,34], popupAnchor:[0,-30]
+  });
+}
+
+function popupHtml(act){
+  const c = CATS[act.cat] || CATS.monument;
+  const d = S.hotel ? distKm(S.hotel, act) : null;
+  return ''
+  + '<div style="--c:' + c.color + '">'
+  +   '<div class="pop__img">'
+  +     '<img src="' + esc(act.img) + '" alt="" data-cat="' + esc(act.cat) + '" onerror="imgFallback(this)">'
+  +     '<span class="pop__cat"><i class="fa-solid ' + c.icon + '"></i> ' + c.short + '</span>'
+  +   '</div>'
+  +   '<div class="pop__body">'
+  +     '<div class="pop__title">' + esc(act.title) + '</div>'
+  +     '<div class="pop__meta">'
+  +       '<span style="color:var(--gold-600)">' + stars(act.rating) + '</span>'
+  +       '<b>' + money(act.price) + '</b>'
+  +       '<span><i class="fa-regular fa-clock"></i> ' + esc(act.duration || '1h') + '</span>'
+  +       (d != null ? '<span><i class="fa-solid fa-bed"></i> ' + fmtDist(d) + '</span>' : '')
+  +     '</div>'
+  +     '<p class="pop__desc">' + esc((act.desc || '').slice(0,130)) + ((act.desc||'').length > 130 ? '…' : '') + '</p>'
+  +     '<div class="pop__acts">'
+  +       '<button class="btn btn--sm btn--primary" data-pop="plan" data-id="' + esc(act.id) + '"><i class="fa-solid fa-calendar-plus"></i> Planifier</button>'
+  +       '<button class="btn btn--sm" data-pop="route" data-id="' + esc(act.id) + '"><i class="fa-solid fa-diamond-turn-right"></i> Y aller</button>'
+  +     '</div>'
+  +   '</div>'
+  + '</div>';
+}
+
+function renderMarkers(){
+  if(!map) return;
+  markerLayer.clearLayers();
+  markers = {};
+
+  // Ordre dans le planning → pastille numérotée
+  const order = {};
+  let n = 0;
+  S.days.forEach(d => d.items.forEach(i => { n++; if(!order[i.aid]) order[i.aid] = n; }));
+
+  const visible = filtered();
+  visible.forEach(a => {
+    const m = L.marker([a.lat, a.lng], { icon:catIcon(a, order[a.id]), riseOnHover:true, title:a.title });
+  m.bindPopup(popupHtml(a), { maxWidth:280, minWidth:266, closeButton:true, autoPanPadding:[26,70] });
+    m.on('click', () => setActive(a.id, false));
+    m.addTo(markerLayer);
+    markers[a.id] = m;
+  });
+
+  if(hotelMarker){ hotelMarker.addTo(map); }
+}
+
+/** Survol / clic sur une carte → focus sur le marqueur */
+function setActive(id, fly){
+  activeId = id;
+  $$('.card').forEach(c => c.classList.toggle('is-active', c.dataset.id === id));
+  Object.keys(markers).forEach(k => {
+    const el = markers[k].getElement();
+    if(el) el.classList.toggle('is-active', k === id);
+  });
+  const act = getActivity(id);
+  if(!act || !map) return;
+  if(fly){
+    map.flyTo([act.lat, act.lng], Math.max(map.getZoom(), 15), { duration:.9, easeLinearity:.25 });
+    map.once('moveend', () => { if(markers[id]) markers[id].openPopup(); });
+  }
+  drawLink(act);
+}
+
+/** Trait pointillé hôtel → activité sélectionnée */
+function drawLink(act){
+  if(!map) return;
+  if(linkLine){ map.removeLayer(linkLine); linkLine = null; }
+  if(!S.hotel || !act) return;
+  linkLine = L.polyline([[S.hotel.lat, S.hotel.lng],[act.lat, act.lng]], {
+    color:'#D4AF37', weight:2.5, opacity:.85, dashArray:'6 8', lineCap:'round'
+  }).addTo(map);
+}
+
+function fitAll(){
+  if(!map) return;
+  const pts = filtered().map(a => [a.lat, a.lng]);
+  if(S.hotel) pts.push([S.hotel.lat, S.hotel.lng]);
+  if(!pts.length) return;
+  map.flyToBounds(L.latLngBounds(pts).pad(.16), { duration:.9 });
+}
+
+/* ------------------------- HÔTEL & GÉOCODAGE ------------------------- */
+
+const LONDON_VIEWBOX = '-0.55,51.72,0.35,51.25';   // W,N,E,S
+let geoAbort = null, geoTimer = null, geoResults = [], geoHl = -1;
+
+async function geocode(query, limit){
+  if(geoAbort) geoAbort.abort();
+  geoAbort = new AbortController();
+  const url = 'https://nominatim.openstreetmap.org/search'
+            + '?format=jsonv2&addressdetails=1&limit=' + (limit || 6)
+            + '&viewbox=' + LONDON_VIEWBOX + '&bounded=1'
+            + '&accept-language=fr'
+            + '&q=' + encodeURIComponent(query);
+  const res = await fetch(url, { signal:geoAbort.signal, headers:{ 'Accept':'application/json' } });
+  if(!res.ok) throw new Error('Nominatim ' + res.status);
+  return res.json();
+}
+
+function showGeoList(items){
+  const box = $('#geoList');
+  geoResults = items; geoHl = -1;
+  if(!items.length){
+    box.innerHTML = '<div class="geoloading">Aucun résultat à Londres pour cette recherche.</div>';
+    box.classList.add('is-open'); return;
+  }
+  box.innerHTML = items.map((r,i) => {
+    const name = (r.name && r.name.trim()) || r.display_name.split(',')[0];
+    return '<div class="geoitem" data-i="' + i + '" role="option">'
+         + '<i class="fa-solid fa-location-dot"></i><div style="min-width:0">'
+         + '<b>' + esc(name) + '</b><span>' + esc(r.display_name) + '</span></div></div>';
+  }).join('');
+  box.classList.add('is-open');
+}
+function hideGeoList(){ $('#geoList').classList.remove('is-open'); }
+
+function searchHotel(term){
+  const q = (term != null ? term : $('#hotelInput').value).trim();
+  if(q.length < 3){ hideGeoList(); return; }
+  const box = $('#geoList');
+  box.innerHTML = '<div class="geoloading"><i class="fa-solid fa-circle-notch spin"></i> Recherche à Londres…</div>';
+  box.classList.add('is-open');
+  geocode(q, 6)
+    .then(showGeoList)
+    .catch(err => {
+      if(err.name === 'AbortError') return;
+      box.innerHTML = '<div class="geoloading">Service de recherche indisponible. Saisissez les coordonnées manuellement.</div>';
+    });
+}
+
+function setHotel(name, label, lat, lng){
+  S.hotel = { name:name, label:label, lat:+lat, lng:+lng };
+  save();
+  renderHotel();
+  renderList();
+  renderMarkers();
+  renderPlanning();
+  if(map) map.flyTo([lat, lng], 14.5, { duration:1 });
+  toast('Hôtel enregistré : ' + esc(name), 'ok', 'fa-bed');
+}
+
+function renderHotel(){
+  if(!map) return;
+  if(hotelMarker){ map.removeLayer(hotelMarker); hotelMarker = null; }
+  const chip = $('#hotelChip');
+  if(!S.hotel){
+    chip.classList.remove('is-on');
+    $('#mcHotel').disabled = true;
+    return;
+  }
+  chip.classList.add('is-on');
+  $('#hotelChipName').textContent = S.hotel.name;
+  $('#hotelInput').value = '';
+  $('#hotelInput').placeholder = 'Changer de point de départ…';
+  $('#mcHotel').disabled = false;
+
+  hotelMarker = L.marker([S.hotel.lat, S.hotel.lng], {
+    zIndexOffset:1000,
+    icon:L.divIcon({
+      className:'mk-wrap',
+      html:'<div class="mk-hotel"><i class="fa-solid fa-bed"></i></div>',
+      iconSize:[44,44], iconAnchor:[22,22], popupAnchor:[0,-20]
+    })
+  }).addTo(map);
+  hotelMarker.bindPopup('<div class="pop__body"><div class="pop__title">' + esc(S.hotel.name) + '</div>'
+    + '<p class="pop__desc">' + esc(S.hotel.label || '') + '</p>'
+    + '<div class="pop__meta"><b>Point de départ de vos itinéraires</b></div></div>', { maxWidth:280 });
+}
+
+/* =====================================================================
+   6. PLANNING, BUDGET & DRAG-AND-DROP
+   ===================================================================== */
+
+let dragCtx = null;
+
+function dayTotal(day){
+  return day.items.reduce((sum, it) => {
+    const a = getActivity(it.aid);
+    return sum + (a ? Number(a.price) || 0 : 0);
+  }, 0);
+}
+function tripTotal(){ return S.days.reduce((s,d) => s + dayTotal(d), 0); }
+function tripCount(){ return S.days.reduce((s,d) => s + d.items.length, 0); }
+
+function renderPlanning(){
+  const box = $('#days');
+  box.innerHTML = S.days.map((d, di) => {
+    const total = dayTotal(d);
+    const items = d.items.map((it, ii) => {
+      const a = getActivity(it.aid);
+      if(!a){
+        return '<div class="step" data-item="' + esc(it.id) + '" data-day="' + esc(d.id) + '">'
+             + '<span class="step__ord">' + (ii+1) + '</span>'
+             + '<span class="step__ico" style="--c:#9AA6B5"><i class="fa-solid fa-question"></i></span>'
+             + '<div class="step__txt"><b>Activité supprimée</b><span>Retirer cette étape</span></div>'
+             + '<div class="step__acts"><button class="del" data-step="del"><i class="fa-solid fa-xmark"></i></button></div></div>';
+      }
+      const c = CATS[a.cat] || CATS.monument;
+      const dist = S.hotel ? fmtDist(distKm(S.hotel, a)) : (a.area || '');
+      return '<div class="step" draggable="true" data-item="' + esc(it.id) + '" data-day="' + esc(d.id) + '" data-aid="' + esc(a.id) + '">'
+        + '<span class="step__ord">' + (ii+1) + '</span>'
+        + '<span class="step__ico" style="--c:' + c.color + '"><i class="fa-solid ' + c.icon + '"></i></span>'
+        + '<div class="step__txt"><b>' + esc(a.title) + '</b><span>' + money(a.price) + ' · ' + esc(a.duration || '1h')
+        + (dist ? ' · ' + esc(dist) : '') + '</span></div>'
+        + '<div class="step__acts">'
+        +   '<button data-step="locate" title="Voir sur la carte"><i class="fa-solid fa-location-dot"></i></button>'
+        +   '<button data-step="route" title="Itinéraire"><i class="fa-solid fa-diamond-turn-right"></i></button>'
+        +   '<button class="del" data-step="del" title="Retirer"><i class="fa-solid fa-xmark"></i></button>'
+        + '</div></div>';
+    }).join('');
+
+    return '<div class="day" data-day="' + esc(d.id) + '">'
+      + '<div class="day__head">'
+      +   '<span class="day__no">J' + (di+1) + '</span>'
+      +   '<input class="day__name" value="' + esc(d.name) + '" data-dayname="' + esc(d.id) + '" aria-label="Nom du jour">'
+      +   '<span class="day__sum">' + (total ? moneyShort(total) : '£0') + '</span>'
+      +   '<button class="day__del" data-dayaction="del" title="Supprimer ce jour"><i class="fa-solid fa-trash-can"></i></button>'
+      + '</div>'
+      + (d.items.length
+          ? '<div class="day__list scroll">' + items + '</div>'
+          : '<div class="day__empty"><i class="fa-solid fa-hand-pointer"></i>Glissez une activité ici<br>ou utilisez « Planifier »</div>')
+      + '</div>';
+  }).join('')
+  + '<button class="dayadd" id="dayAdd"><i class="fa-solid fa-plus"></i>Ajouter<br>un jour</button>';
+
+  // Compteurs & budget
+  const n = tripCount(), tot = tripTotal(), ppl = Math.max(1, Number(S.people) || 1);
+  $('#planCount').textContent  = n + (n > 1 ? ' étapes' : ' étape');
+  $('#budgetVal').textContent  = moneyShort(tot);
+  $('#budgetTotal').textContent= 'Total ' + moneyShort(tot * ppl);
+  $('#statSpots').textContent  = n;
+  $('#statBudget').textContent = moneyShort(tot * ppl);
+  const pip = $('#tabPip');
+  pip.textContent = n; pip.hidden = n === 0;
+
+  $('#dayAdd').onclick = addDay;
+}
+
+function addDay(){
+  if(S.days.length >= 14){ toast('14 jours maximum, ça devient un déménagement !', 'warn'); return; }
+  S.days.push({ id:'d' + uid(), name:'Jour ' + (S.days.length + 1), items:[] });
+  save(); renderPlanning(); refreshDaySelect();
+  const box = $('#days'); box.scrollLeft = box.scrollWidth;
+}
+
+function removeDay(dayId){
+  const d = S.days.find(x => x.id === dayId);
+  if(!d) return;
+  if(S.days.length <= 1){ toast('Il faut au moins un jour dans le planning.', 'warn'); return; }
+  if(d.items.length && !confirm('Supprimer « ' + d.name + ' » et ses ' + d.items.length + ' étape(s) ?')) return;
+  S.days = S.days.filter(x => x.id !== dayId);
+  save(); renderPlanning(); renderList(); renderMarkers(); refreshDaySelect();
+  toast('Jour supprimé.', 'ok', 'fa-trash-can');
+}
+
+function addToDay(aid, dayId){
+  const day = S.days.find(d => d.id === dayId);
+  const act = getActivity(aid);
+  if(!day || !act) return;
+  if(day.items.some(i => i.aid === aid)){
+    toast('« ' + act.title + ' » est déjà prévu ce jour-là.', 'warn');
+    return;
+  }
+  day.items.push({ id:uid(), aid:aid });
+  save(); renderPlanning(); renderList(); renderMarkers();
+  toast('« ' + act.title + ' » ajouté à ' + day.name + '.', 'ok', 'fa-calendar-check');
+}
+
+function removeStep(dayId, itemId){
+  const day = S.days.find(d => d.id === dayId);
+  if(!day) return;
+  day.items = day.items.filter(i => i.id !== itemId);
+  save(); renderPlanning(); renderList(); renderMarkers();
+}
+
+/* ---------------------- Menu « ajouter au jour » ---------------------- */
+
+function openDayMenu(anchor, aid){
+  const menu = $('#dayMenu');
+  const act = getActivity(aid);
+  menu.innerHTML = '<div class="daymenu__t">Ajouter « ' + esc((act && act.title) || '') + ' » à…</div>'
+    + S.days.map((d, i) => {
+        const has = d.items.some(x => x.aid === aid);
+        return '<button data-day="' + esc(d.id) + '"' + (has ? ' disabled style="opacity:.45"' : '') + '>'
+             + '<i class="fa-solid ' + (has ? 'fa-circle-check' : 'fa-calendar-day') + '"></i>' + esc(d.name)
+             + '<b>' + d.items.length + '</b></button>';
+      }).join('')
+    + '<div class="sepline"></div>'
+    + '<button class="newday" data-day="__new"><i class="fa-solid fa-plus"></i>Nouveau jour</button>';
+
+  menu.classList.add('is-open');
+  const r = anchor.getBoundingClientRect();
+  const mw = menu.offsetWidth, mh = menu.offsetHeight;
+  let left = Math.min(r.left, window.innerWidth - mw - 12);
+  let top  = r.bottom + 6;
+  if(top + mh > window.innerHeight - 10) top = Math.max(10, r.top - mh - 6);
+  menu.style.left = Math.max(10, left) + 'px';
+  menu.style.top  = top + 'px';
+  menu.dataset.aid = aid;
+}
+function closeDayMenu(){ $('#dayMenu').classList.remove('is-open'); }
+
+/* ------------------------- Drag & drop ------------------------- */
+
+function initDnD(){
+  // Source : cartes de la sidebar
+  $('#list').addEventListener('dragstart', e => {
+    const card = e.target.closest('.card');
+    if(!card) return;
+    dragCtx = { type:'act', aid:card.dataset.id };
+    e.dataTransfer.effectAllowed = 'copy';
+    try{ e.dataTransfer.setData('text/plain', card.dataset.id); }catch(_){}
+    if(window.innerWidth <= 1024) return;
+    $('#drawer').classList.remove('is-collapsed');
+  });
+
+  const days = $('#days');
+
+  // Source : étapes du planning
+  days.addEventListener('dragstart', e => {
+    const step = e.target.closest('.step');
+    if(!step) return;
+    dragCtx = { type:'step', itemId:step.dataset.item, dayId:step.dataset.day };
+    step.classList.add('is-drag');
+    e.dataTransfer.effectAllowed = 'move';
+    try{ e.dataTransfer.setData('text/plain', step.dataset.item); }catch(_){}
+  });
+  days.addEventListener('dragend', () => {
+    $$('.step.is-drag').forEach(s => s.classList.remove('is-drag'));
+    $$('.day.is-drop').forEach(d => d.classList.remove('is-drop'));
+    dragCtx = null;
+  });
+
+  days.addEventListener('dragover', e => {
+    const day = e.target.closest('.day');
+    if(!day || !dragCtx) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = dragCtx.type === 'step' ? 'move' : 'copy';
+    $$('.day.is-drop').forEach(d => { if(d !== day) d.classList.remove('is-drop'); });
+    day.classList.add('is-drop');
+  });
+  days.addEventListener('dragleave', e => {
+    const day = e.target.closest('.day');
+    if(day && !day.contains(e.relatedTarget)) day.classList.remove('is-drop');
+  });
+
+  days.addEventListener('drop', e => {
+    const dayEl = e.target.closest('.day');
+    if(!dayEl || !dragCtx) return;
+    e.preventDefault();
+    dayEl.classList.remove('is-drop');
+    const targetDay = S.days.find(d => d.id === dayEl.dataset.day);
+    if(!targetDay) return;
+
+    // Index d'insertion selon la position verticale
+    const steps = $$('.step', dayEl);
+    let index = steps.length;
+    for(let i = 0; i < steps.length; i++){
+      const r = steps[i].getBoundingClientRect();
+      if(e.clientY < r.top + r.height / 2){ index = i; break; }
+    }
+
+    if(dragCtx.type === 'act'){
+      if(targetDay.items.some(i => i.aid === dragCtx.aid)){
+        toast('Déjà présent dans ce jour.', 'warn');
+      }else{
+        targetDay.items.splice(index, 0, { id:uid(), aid:dragCtx.aid });
+        const a = getActivity(dragCtx.aid);
+        toast('« ' + (a ? a.title : '') + ' » ajouté à ' + targetDay.name + '.', 'ok', 'fa-calendar-check');
+      }
+    }else{
+      const from = S.days.find(d => d.id === dragCtx.dayId);
+      if(!from) return;
+      const pos = from.items.findIndex(i => i.id === dragCtx.itemId);
+      if(pos < 0) return;
+      const [moved] = from.items.splice(pos, 1);
+      if(from === targetDay && pos < index) index--;
+      if(targetDay !== from && targetDay.items.some(i => i.aid === moved.aid)){
+        from.items.splice(pos, 0, moved);
+        toast('Cette activité est déjà dans ' + targetDay.name + '.', 'warn');
+      }else{
+        targetDay.items.splice(index, 0, moved);
+      }
+    }
+    dragCtx = null;
+    save(); renderPlanning(); renderList(); renderMarkers();
+  });
+}
+
+/* =====================================================================
+   7. MODAL D'AJOUT / ÉDITION
+   ===================================================================== */
+
+function buildCatPicker(){
+  $('#fCats').innerHTML = Object.keys(CATS).map((k, i) =>
+    '<label style="--c:' + CATS[k].color + '"><input type="radio" name="fcat" value="' + k + '"' + (i === 0 ? ' checked' : '') + '>'
+    + '<i class="fa-solid ' + CATS[k].icon + '"></i><span>' + CATS[k].label + '</span></label>').join('');
+}
+function refreshDaySelect(){
+  const sel = $('#fDay');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Ne pas planifier pour l\'instant —</option>'
+    + S.days.map(d => '<option value="' + esc(d.id) + '">' + esc(d.name) + '</option>').join('');
+  if(cur) sel.value = cur;
+}
+
+function openModal(editId){
+  const f = $('#actForm');
+  f.reset();
+  buildCatPicker();
+  refreshDaySelect();
+  $('#fPrev').innerHTML = '<span><i class="fa-regular fa-image"></i> Aperçu de la photo</span>';
+  $('#fId').value = '';
+
+  if(editId){
+    const a = getActivity(editId);
+    if(a){
+      $('#mdTitle').textContent = 'Modifier l\'activité';
+      $('#fId').value = a.id;
+      $('#fTitle').value = a.title;
+      $('#fPrice').value = a.price;
+      $('#fDur').value = a.duration || '';
+      $('#fLat').value = a.lat;
+      $('#fLng').value = a.lng;
+      $('#fImg').value = a.img || '';
+      $('#fDesc').value = a.desc || '';
+      $('#fAddr').value = a.area || '';
+      const r = $('#fCats input[value="' + a.cat + '"]');
+      if(r) r.checked = true;
+      updatePreview();
+    }
+  }else{
+    $('#mdTitle').textContent = 'Ajouter une pépite';
+  }
+  $('#ovl').classList.add('is-open');
+  setTimeout(() => $('#fTitle').focus(), 80);
+}
+function closeModal(){ $('#ovl').classList.remove('is-open'); }
+
+function updatePreview(){
+  const url = $('#fImg').value.trim();
+  const box = $('#fPrev');
+  if(!url){ box.innerHTML = '<span><i class="fa-regular fa-image"></i> Aperçu de la photo</span>'; return; }
+  box.innerHTML = '<img src="' + esc(url) + '" alt="" onerror="this.parentElement.innerHTML=\'<span>Image introuvable</span>\'">';
+}
+
+function saveActivity(){
+  const id    = $('#fId').value;
+  const title = $('#fTitle').value.trim();
+  const lat   = parseFloat($('#fLat').value);
+  const lng   = parseFloat($('#fLng').value);
+  const catEl = $('#fCats input:checked');
+
+  let ok = true;
+  [['#fTitle', !!title], ['#fLat', isFinite(lat)], ['#fLng', isFinite(lng)]].forEach(([sel, valid]) => {
+    const field = $(sel).closest('.field');
+    field.classList.toggle('has-err', !valid);
+    if(!valid) ok = false;
+  });
+  if(!ok){ toast('Nom et coordonnées sont obligatoires.', 'err'); return; }
+
+  const data = {
+    id: id || 'u' + uid(),
+    title: title,
+    cat: catEl ? catEl.value : 'insolite',
+    price: Math.max(0, parseFloat($('#fPrice').value) || 0),
+    rating: 4.5,
+    lat: lat, lng: lng,
+    area: $('#fAddr').value.trim() || 'Londres',
+    duration: $('#fDur').value.trim() || '1h',
+    img: $('#fImg').value.trim(),
+    desc: $('#fDesc').value.trim() || 'Activité ajoutée depuis votre carnet de voyage.',
+    tip: '',
+    custom: true
+  };
+
+  const idx = S.custom.findIndex(a => a.id === data.id);
+  if(idx >= 0){ data.rating = S.custom[idx].rating; S.custom[idx] = data; }
+  else S.custom.push(data);
+
+  const day = $('#fDay').value;
+  save();
+  if(day) addToDay(data.id, day);
+
+  renderList(); renderMarkers(); renderPlanning();
+  closeModal();
+  toast(idx >= 0 ? 'Activité mise à jour.' : '« ' + data.title +' » ajouté à votre carte.', 'ok', 'fa-star');
+  if(idx < 0) setTimeout(() => setActive(data.id, true), 220);
+}
+
+function startPick(){
+  pickMode = true;
+  $('#ovl').style.opacity = '0';
+  $('#ovl').style.pointerEvents = 'none';
+  $('#map').style.cursor = 'crosshair';
+  showView('stage');
+  toast('Cliquez sur la carte pour choisir le point.', 'warn', 'fa-crosshairs');
+}
+function endPick(){
+  pickMode = false;
+  $('#ovl').style.opacity = '';
+  $('#ovl').style.pointerEvents = '';
+  $('#map').style.cursor = '';
+}
+
+/* =====================================================================
+   8. EXPORT / IMPRESSION
+   ===================================================================== */
+
+function buildPrintSheet(){
+  const ppl = Math.max(1, Number(S.people) || 1);
+  const tot = tripTotal();
+  const now = new Date().toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
+
+  let html = ''
+   + '<div class="ps__head"><div><div class="sub">London Trip Planner</div>'
+   + '<h1>Mon voyage à Londres</h1></div>'
+   + '<div class="ps__badge"><b>' + moneyShort(tot * ppl) + '</b><span>Budget · ' + ppl + ' pers.</span></div></div>';
+
+  if(S.hotel){
+    html += '<div class="ps__hotel"><b>Point de départ :</b> ' + esc(S.hotel.name)
+         +  '<br><span style="color:#7A8899">' + esc(S.hotel.label || '') + '</span></div>';
+  }
+
+  S.days.forEach((d, di) => {
+    if(!d.items.length) return;
+    html += '<div class="ps__day"><h3>' + esc(d.name) + ' <span>' + moneyShort(dayTotal(d)) + '</span></h3>';
+    d.items.forEach((it, ii) => {
+      const a = getActivity(it.aid);
+      if(!a) return;
+      const c = CATS[a.cat] || CATS.monument;
+      const dist = S.hotel ? ' · ' + fmtDist(distKm(S.hotel, a)) + ' de l\'hôtel' : '';
+      html += '<div class="ps__row"><span class="n">' + (ii+1) + '</span>'
+           +  '<span class="t"><b>' + esc(a.title) + '</b>'
+           +  '<span>' + c.short + ' · ' + esc(a.area || 'Londres') + ' · ' + esc(a.duration || '') + dist + '</span></span>'
+           +  '<span class="p">' + money(a.price) + '</span></div>';
+    });
+    html += '</div>';
+  });
+
+  if(!tripCount()){
+    html += '<p style="color:#7A8899">Votre planning est encore vide — ajoutez des activités pour générer votre feuille de route.</p>';
+  }
+
+  html += '<div class="ps__foot"><span>' + tripCount() + ' étape(s) · ' + S.days.length + ' jour(s) · édité le ' + now + '</span>'
+       +  '<span class="tot">' + moneyShort(tot) + ' / personne</span></div>';
+
+  $('#printSheet').innerHTML = html;
+}
+
+function exportTrip(){
+  buildPrintSheet();
+  setTimeout(() => window.print(), 90);
+}
+
+/* =====================================================================
+   9. VUES MOBILES
+   ===================================================================== */
+
+function showView(view){
+  const side = $('#side'), stage = $('#stage');
+  side.classList.toggle('is-view', view === 'side');
+  stage.classList.toggle('is-view', view === 'stage' || view === 'planning');
+  stage.classList.toggle('stage--planning', view === 'planning');
+  $$('#tabs button').forEach(b => b.classList.toggle('is-on', b.dataset.view === view));
+  if(view !== 'side' && map) setTimeout(() => map.invalidateSize(), 340);
+}
+
+/* =====================================================================
+   10. ÉVÈNEMENTS
+   ===================================================================== */
+
+function bind(){
+
+  /* ---- Recherche ---- */
+  const q = $('#q');
+  q.addEventListener('input', () => {
+    F.q = q.value;
+    $('#searchWrap').classList.toggle('is-filled', !!q.value);
+    renderList(); renderMarkers();
+  });
+  $('#qClear').addEventListener('click', () => {
+    q.value = ''; F.q = '';
+    $('#searchWrap').classList.remove('is-filled');
+    renderList(); renderMarkers(); q.focus();
+  });
+
+  /* ---- Chips catégories / prix ---- */
+  $('#catChips').addEventListener('click', e => {
+    const b = e.target.closest('[data-cat]'); if(!b) return;
+    const k = b.dataset.cat;
+    F.cats.has(k) ? F.cats.delete(k) : F.cats.add(k);
+    b.classList.toggle('is-on', F.cats.has(k));
+    renderList(); renderMarkers();
+  });
+  $('#priceChips').addEventListener('click', e => {
+    const b = e.target.closest('[data-price]'); if(!b) return;
+    const k = b.dataset.price;
+    F.prices.has(k) ? F.prices.delete(k) : F.prices.add(k);
+    b.classList.toggle('is-on', F.prices.has(k));
+    renderList(); renderMarkers();
+  });
+  $$('.fgroup__reset').forEach(btn => btn.addEventListener('click', () => {
+    if(btn.dataset.reset === 'cat'){ F.cats.clear(); $$('#catChips .chip').forEach(c => c.classList.remove('is-on')); }
+    else { F.prices.clear(); $$('#priceChips .chip').forEach(c => c.classList.remove('is-on')); }
+    renderList(); renderMarkers();
+  }));
+  $('#sortSel').addEventListener('change', e => {
+    if(e.target.value === 'dist' && !S.hotel){
+      toast("Renseignez d'abord votre hôtel pour trier par distance.", 'warn');
+      e.target.value = F.sort; return;
+    }
+    F.sort = e.target.value; renderList();
+  });
+
+  /* ---- Interactions sur les cartes ---- */
+  const list = $('#list');
+  list.addEventListener('click', e => {
+    const card = e.target.closest('.card'); if(!card) return;
+    const id  = card.dataset.id;
+    const btn = e.target.closest('[data-act]');
+    const act = getActivity(id);
+    if(!act) return;
+
+    if(!btn){ setActive(id, true); if(window.innerWidth <= 1024) showView('stage'); return; }
+
+    switch(btn.dataset.act){
+      case 'locate':
+        setActive(id, true);
+        if(window.innerWidth <= 1024) showView('stage');
+        break;
+      case 'route':  openDirections(act); break;
+      case 'plan':   openDayMenu(btn, id); break;
+      case 'edit':   openModal(id); break;
+      case 'remove':
+        if(!confirm('Retirer « ' + act.title + ' » de la liste ?')) return;
+        if(act.custom) S.custom = S.custom.filter(a => a.id !== id);
+        else S.hidden.push(id);
+        S.days.forEach(d => { d.items = d.items.filter(i => i.aid !== id); });
+        save(); renderList(); renderMarkers(); renderPlanning();
+        toast('Activité retirée.', 'ok', 'fa-trash-can');
+        break;
+    }
+  });
+  let hoverTimer = null;
+  list.addEventListener('mouseover', e => {
+    const card = e.target.closest('.card'); if(!card) return;
+    if(card.dataset.id === activeId) return;
+    clearTimeout(hoverTimer);
+    hoverTimer = setTimeout(() => {
+      const a = getActivity(card.dataset.id);
+      if(a && map && !pickMode) map.panTo([a.lat, a.lng], { animate:true, duration:.7 });
+    }, 260);
+  });
+  list.addEventListener('mouseleave', () => clearTimeout(hoverTimer));
+
+  /* ---- Menu jour ---- */
+  $('#dayMenu').addEventListener('click', e => {
+    const b = e.target.closest('[data-day]'); if(!b) return;
+    const aid = $('#dayMenu').dataset.aid;
+    if(b.dataset.day === '__new'){
+      addDay();
+      addToDay(aid, S.days[S.days.length - 1].id);
+    }else{
+      addToDay(aid, b.dataset.day);
+    }
+    closeDayMenu();
+  });
+  document.addEventListener('click', e => {
+    if(!e.target.closest('#dayMenu') && !e.target.closest('[data-act="plan"]') && !e.target.closest('[data-pop="plan"]')) closeDayMenu();
+    if(!e.target.closest('.hotelbar__field')) hideGeoList();
+  });
+  window.addEventListener('resize', closeDayMenu);
+  $('#days').addEventListener('scroll', closeDayMenu);
+
+  /* ---- Popups Leaflet ---- */
+  $('#map').addEventListener('click', e => {
+    const b = e.target.closest('[data-pop]'); if(!b) return;
+    const act = getActivity(b.dataset.id); if(!act) return;
+    if(b.dataset.pop === 'route') openDirections(act);
+    else openDayMenu(b, act.id);
+  });
+
+  /* ---- Hôtel ---- */
+  const hi = $('#hotelInput');
+  hi.addEventListener('input', () => {
+    clearTimeout(geoTimer);
+    const v = hi.value.trim();
+    if(v.length < 3){ hideGeoList(); return; }
+    geoTimer = setTimeout(() => searchHotel(v), 380);
+  });
+  hi.addEventListener('keydown', e => {
+    const box = $('#geoList');
+    if(!box.classList.contains('is-open')) { if(e.key === 'Enter'){ e.preventDefault(); searchHotel(); } return; }
+    const items = $$('.geoitem', box);
+    if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+      e.preventDefault();
+      geoHl = (geoHl + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+      items.forEach((it,i) => it.classList.toggle('is-hl', i === geoHl));
+      if(items[geoHl]) items[geoHl].scrollIntoView({ block:'nearest' });
+    }else if(e.key === 'Enter'){
+      e.preventDefault();
+      const r = geoResults[geoHl >= 0 ? geoHl : 0];
+      if(r) pickGeo(r); else searchHotel();
+    }else if(e.key === 'Escape'){ hideGeoList(); }
+  });
+  $('#geoList').addEventListener('click', e => {
+    const it = e.target.closest('.geoitem'); if(!it) return;
+    pickGeo(geoResults[+it.dataset.i]);
+  });
+  function pickGeo(r){
+    if(!r) return;
+    hideGeoList();
+    setHotel((r.name && r.name.trim()) || r.display_name.split(',')[0], r.display_name, r.lat, r.lon);
+  }
+  $('#hotelGo').addEventListener('click', () => searchHotel());
+  $('#hotelClear').addEventListener('click', () => {
+    S.hotel = null; save();
+    $('#hotelInput').placeholder = 'Votre hôtel ou point de départ à Londres…';
+    if(F.sort === 'dist'){ F.sort = 'reco'; $('#sortSel').value = 'reco'; }
+    if(linkLine && map){ map.removeLayer(linkLine); linkLine = null; }
+    renderHotel(); renderList(); renderPlanning();
+    toast('Point de départ retiré.', 'ok', 'fa-xmark');
+  });
+  $$('.hotelbar__mode button').forEach(b => b.addEventListener('click', () => {
+    S.mode = b.dataset.mode; save();
+    $$('.hotelbar__mode button').forEach(x => x.classList.toggle('is-on', x === b));
+    toast(S.mode === 'walking' ? 'Itinéraires à pied activés.' : 'Itinéraires en transports en commun activés.', 'ok',
+          S.mode === 'walking' ? 'fa-person-walking' : 'fa-train-subway');
+  }));
+
+  /* ---- Contrôles carte ---- */
+  $('#mcFit').addEventListener('click', fitAll);
+  $('#mcHotel').addEventListener('click', () => {
+    if(!S.hotel || !map) return;
+    map.flyTo([S.hotel.lat, S.hotel.lng], 15, { duration:.9 });
+    if(hotelMarker) hotelMarker.openPopup();
+  });
+  $('#mcPlan').addEventListener('click', e => {
+    F.onlyPlan = !F.onlyPlan;
+    e.currentTarget.classList.toggle('is-on', F.onlyPlan);
+    renderList(); renderMarkers();
+    toast(F.onlyPlan ? 'Affichage limité à votre planning.' : 'Toutes les activités affichées.', 'ok', 'fa-list-check');
+  });
+  $('#legendTog').addEventListener('click', () => {
+    const l = $('#legend'); l.classList.toggle('is-min');
+    $('#legendTog').innerHTML = l.classList.contains('is-min')
+      ? '<i class="fa-solid fa-chevron-up"></i> Légende' : '<i class="fa-solid fa-chevron-down"></i> Réduire';
+  });
+
+  /* ---- Drawer ---- */
+  $('#drawerHead').addEventListener('click', e => {
+    if(e.target.closest('.budget')) return;
+    if(window.innerWidth <= 1024) return;
+    $('#drawer').classList.toggle('is-collapsed');
+    S.drawerOpen = !$('#drawer').classList.contains('is-collapsed'); save();
+    setTimeout(() => { if(map) map.invalidateSize(); }, 400);
+  });
+
+  /* ---- Planning ---- */
+  const days = $('#days');
+  days.addEventListener('click', e => {
+    const dayDel = e.target.closest('[data-dayaction="del"]');
+    if(dayDel){ removeDay(dayDel.closest('.day').dataset.day); return; }
+    const b = e.target.closest('[data-step]'); if(!b) return;
+    const step = b.closest('.step');
+    const act  = getActivity(step.dataset.aid);
+    if(b.dataset.step === 'del') removeStep(step.dataset.day, step.dataset.item);
+    else if(b.dataset.step === 'locate' && act){ setActive(act.id, true); if(window.innerWidth <= 1024) showView('stage'); }
+    else if(b.dataset.step === 'route' && act) openDirections(act);
+  });
+  days.addEventListener('change', e => {
+    const inp = e.target.closest('[data-dayname]'); if(!inp) return;
+    const d = S.days.find(x => x.id === inp.dataset.dayname);
+    if(d){ d.name = inp.value.trim() || d.name; save(); renderPlanning(); refreshDaySelect(); }
+  });
+  $('#ppl').addEventListener('input', e => {
+    S.people = Math.max(1, Math.min(20, Number(e.target.value) || 1));
+    save(); renderPlanning();
+  });
+
+  /* ---- Header ---- */
+  $('#btnAdd').addEventListener('click', () => openModal());
+  $('#btnExport').addEventListener('click', exportTrip);
+  $('#btnReset').addEventListener('click', () => {
+    if(!confirm('Réinitialiser complètement le voyage (planning, hôtel et activités personnalisées) ?')) return;
+    S = defaultState(); save();
+    F.q = ''; F.cats.clear(); F.prices.clear(); F.onlyPlan = false; F.sort = 'reco';
+    $('#q').value = ''; $('#sortSel').value = 'reco';
+    $$('.chip').forEach(c => c.classList.remove('is-on'));
+    $('#mcPlan').classList.remove('is-on');
+    $('#hotelInput').value = '';
+    $('#ppl').value = 1;
+    renderHotel(); renderList(); renderMarkers(); renderPlanning(); refreshDaySelect();
+    toast('Voyage réinitialisé.', 'ok', 'fa-rotate-left');
+  });
+
+  /* ---- Modal ---- */
+  $('#mdClose').addEventListener('click', closeModal);
+  $('#mdCancel').addEventListener('click', closeModal);
+  $('#mdSave').addEventListener('click', saveActivity);
+  $('#ovl').addEventListener('mousedown', e => { if(e.target === $('#ovl')) closeModal(); });
+  $('#actForm').addEventListener('submit', e => { e.preventDefault(); saveActivity(); });
+  $('#fImg').addEventListener('change', updatePreview);
+  $('#fImg').addEventListener('blur', updatePreview);
+  $('#fPick').addEventListener('click', startPick);
+  $('#fGeo').addEventListener('click', () => {
+    const v = $('#fAddr').value.trim();
+    if(v.length < 3){ toast('Saisissez une adresse à Londres.', 'warn'); return; }
+    const btn = $('#fGeo');
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i> Recherche…';
+    geocode(v, 1).then(res => {
+      btn.innerHTML = '<i class="fa-solid fa-location-dot"></i> Trouver';
+      if(!res.length){ toast('Adresse introuvable à Londres.', 'err'); return; }
+      $('#fLat').value = (+res[0].lat).toFixed(6);
+      $('#fLng').value = (+res[0].lon).toFixed(6);
+      $('#fAddr').value = res[0].display_name.split(',').slice(0,3).join(',').trim();
+      toast('Coordonnées trouvées !', 'ok', 'fa-location-dot');
+    }).catch(() => {
+      btn.innerHTML = '<i class="fa-solid fa-location-dot"></i> Trouver';
+      toast('Service de géocodage indisponible.', 'err');
+    });
+  });
+
+  /* ---- Onglets mobile ---- */
+  $$('#tabs button').forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
+
+  /* ---- Clavier ---- */
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape'){
+      if(pickMode){ endPick(); $('#ovl').classList.add('is-open'); return; }
+      if($('#ovl').classList.contains('is-open')) closeModal();
+      closeDayMenu(); hideGeoList();
+    }
+    if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k'){ e.preventDefault(); $('#q').focus(); }
+  });
+
+  window.addEventListener('beforeprint', buildPrintSheet);
+}
+
+/* =====================================================================
+   11. INITIALISATION
+   ===================================================================== */
+
+function init(){
+  load();
+  buildChips();
+  buildCatPicker();
+  initMap();
+  renderHotel();
+  renderList();
+  renderPlanning();
+  refreshDaySelect();
+  initDnD();
+  bind();
+
+  showView('side');                       // évite la superposition liste/carte sur mobile
+  $('#ppl').value = S.people || 1;
+  $$('.hotelbar__mode button').forEach(b => b.classList.toggle('is-on', b.dataset.mode === S.mode));
+  if(!S.drawerOpen) $('#drawer').classList.add('is-collapsed');
+
+  // Les cartes de la sidebar deviennent des sources de drag
+  new MutationObserver(() => {
+    $$('#list .card').forEach(c => { if(!c.draggable) c.draggable = true; });
+  }).observe($('#list'), { childList:true });
+  $$('#list .card').forEach(c => c.draggable = true);
+
+  if(map && S.hotel) map.setView([S.hotel.lat, S.hotel.lng], 13.5);
+  else setTimeout(fitAll, 400);
+
+  setTimeout(() => {
+    if(!S.hotel && !tripCount()){
+      toast('Astuce : indiquez votre hôtel pour trier les activités par distance.', 'ok', 'fa-bed');
+    }
+  }, 1400);
+}
+
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+else init();
+
+})();
+</script>
+</body>
+</html>
