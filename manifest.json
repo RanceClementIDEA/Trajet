@@ -1,0 +1,40 @@
+{
+  "name": "Itinéraire — Citroën Saxo 2001",
+  "short_name": "Itinéraire",
+  "description": "Comparateur d'itinéraires : coûts carburant, péage et usure, seuil de rentabilité, carte, pauses et checklist mécanique.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f2efe7",
+  "theme_color": "#f2efe7",
+  "categories": [
+    "travel",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

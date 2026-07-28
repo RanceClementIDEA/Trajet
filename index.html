@@ -4,6 +4,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Itinéraire Saxo — Saint-Nazaire → Saint-Lyé</title>
+<meta name="description" content="Comparateur d'itinéraires pour Citroën Saxo 2001 : coûts carburant, péage et usure, seuil de rentabilité, carte, pauses et checklist mécanique.">
+<meta name="theme-color" content="#f2efe7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141311" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%20width%3D%22512%22%20height%3D%22512%22%3E%20%3Crect%20width%3D%22512%22%20height%3D%22512%22%20fill%3D%22%23f2efe7%22%2F%3E%20%3Crect%20x%3D%2221.0%22%20y%3D%2221.0%22%20width%3D%22470%22%20height%3D%22470%22%20fill%3D%22%23b3452e%22%2F%3E%20%3Cg%20transform%3D%22translate%28109.10%2C367.72%29%20scale%280.29322%2C-0.29322%29%22%20fill%3D%22%23f2efe7%22%3E%20%20%3Cpath%20d%3D%22M431%20841%20421%20835C450%20800%20480%20744%20482%20697C555%20636%20633%20785%20431%20841ZM84%20809%2074%20801C120%20756%20175%20680%20189%20618C274%20557%20340%20735%2084%20809ZM395%20555V65H407C441%2065%20473%2083%20473%2092V130H771V71H784C811%2071%20849%2089%20850%2096V513C870%20517%20885%20525%20891%20533L803%20601L761%20555H594C613%20582%20633%20617%20650%20647H939C953%20647%20963%20652%20965%20663C930%20697%20872%20742%20872%20742L821%20677H691C731%20714%20774%20760%20800%20794C822%20794%20834%20802%20838%20814L715%20843C703%20794%20682%20726%20663%20677H307L315%20647H558C556%20618%20552%20584%20548%20555H478L395%20592ZM771%20397V296H473V397ZM771%20426H473V526H771ZM771%20267V159H473V267ZM259%20371C287%20375%20302%20383%20309%20391L213%20469L169%20412H37L43%20382H184V87C129%2059%2072%2032%2035%2017L86%20-81C95%20-76%20101%20-69%2099%20-56C139%20-22%20204%2043%20246%2091C315%20-32%20394%20-57%20577%20-57C684%20-57%20816%20-57%20909%20-57C914%20-19%20934%204%20967%2011V25C847%2021%20691%2021%20576%2021C402%2021%20328%2032%20259%20109Z%22%2F%3E%20%3C%2Fg%3E%3C%2Fsvg%3E" type="image/svg+xml">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="alternate icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Itinéraire">
+<meta name="application-name" content="Itinéraire Saxo">
+<meta property="og:title" content="Itinéraire — Citroën Saxo 2001">
+<meta property="og:description" content="Quatre itinéraires comparés : coût complet, seuil de rentabilité, carte, pauses.">
+<meta property="og:image" content="icon-512.png">
+<meta property="og:type" content="website">
 <style>/* Leaflet 1.9.4 — BSD-2-Clause, (c) 2010-2023 Vladimir Agafonkin, CloudMade */
 /* required styles */
 
@@ -756,31 +775,37 @@ svg.leaflet-image-layer.leaflet-interactive path {
   @media(max-width:640px){ .seal{width:104px} }
 
   /* ---------- barre de réglages ---------- */
-  .controls{display:flex;flex-wrap:wrap;gap:26px 40px;align-items:flex-end;
+  .controls{display:flex;flex-wrap:wrap;gap:26px 38px;align-items:start;
     padding:22px 0 26px;border-bottom:1px solid var(--rule);margin-bottom:38px}
-  .ctrl{display:flex;flex-direction:column;gap:9px}
+  /* trois rangées fixes : libellé · contrôle · indication — tous les contrôles
+     tombent ainsi exactement sur la même ligne, quelle que soit leur hauteur */
+  .ctrl{display:grid;grid-template-rows:15px 38px auto;row-gap:9px;align-content:start;justify-items:start}
+  .ctrl > .lg{line-height:15px}
   .seg{display:inline-flex;border:1px solid var(--border);background:var(--surface-1)}
-  .seg button{font-family:var(--fu);font-size:12.5px;padding:7px 14px;border:0;background:transparent;
+  .seg{align-items:stretch}
+  .seg button{font-family:var(--fu);font-size:12.5px;padding:0 14px;border:0;background:transparent;
     color:var(--ink-2);cursor:pointer;border-right:1px solid var(--border);letter-spacing:.02em}
   .seg button:last-child{border-right:0}
   .seg button:hover{background:var(--wash)}
   .seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface-1);font-weight:600}
-  .price-row{display:flex;gap:10px;align-items:center}
-  .price-in{display:flex;align-items:baseline;gap:9px;border:1px solid var(--border);padding:5px 11px;background:var(--surface-1)}
+  .price-row{display:flex;gap:10px;align-items:stretch;height:38px}
+  .price-in{display:flex;align-items:center;gap:9px;border:1px solid var(--border);padding:0 11px;background:var(--surface-1)}
   .price-in span{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
   .price-in input{width:56px;border:0;background:transparent;color:var(--ink);font-family:var(--fd);font-size:16px;
-    text-align:right;padding:1px 0}
+    text-align:right;padding:0}
   .price-in input:focus{outline:1px solid var(--s1);outline-offset:3px}
+  .ctrl > div:last-child:not(.price-row):not(.seg){display:flex;gap:14px;flex-wrap:wrap;align-items:baseline}
   .linkish{background:none;border:0;color:var(--muted);font-family:var(--fu);font-size:10.5px;letter-spacing:.1em;
     text-transform:uppercase;text-decoration:none;border-bottom:1px solid var(--border);cursor:pointer;padding:0 0 2px}
   .linkish:hover{color:var(--ink);border-color:var(--ink)}
 
   /* ---------- titres de section ---------- */
   section{margin-bottom:46px}
-  h2{display:flex;align-items:baseline;gap:13px;margin:0 0 20px;font-weight:400}
+  h2{display:flex;align-items:baseline;gap:13px;margin:0 0 20px;font-weight:400;flex-wrap:wrap}
   h2 .kj{font-family:var(--fd);font-size:15px;color:var(--seal);letter-spacing:.1em;flex:0 0 auto}
-  h2 .tx{font-family:var(--fu);font-size:10px;font-weight:600;letter-spacing:.19em;text-transform:uppercase;color:var(--muted);flex:0 0 auto}
-  h2::after{content:"";flex:1 1 auto;height:1px;background:var(--rule);transform:translateY(-3px)}
+  h2 .tx{font-family:var(--fu);font-size:10px;font-weight:600;letter-spacing:.19em;text-transform:uppercase;
+    color:var(--muted);flex:0 1 auto;min-width:0}
+  h2::after{content:"";flex:1 1 24px;height:1px;background:var(--rule);transform:translateY(-3px);min-width:24px}
 
   /* ---------- cartes / tuiles ---------- */
   .card{background:var(--card);border:1px solid var(--rule);padding:24px}
@@ -833,6 +858,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   details.dataview summary::before{content:"＋ "}
   details.dataview[open] summary::before{content:"− "}
   details.dataview summary:hover{color:var(--ink)}
+  details.dataview > div{overflow-x:auto;-webkit-overflow-scrolling:touch}
   details.dataview table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:11px}
   details.dataview th,details.dataview td{padding:5px 10px;border-bottom:1px solid var(--grid);text-align:right;color:var(--ink-2)}
   details.dataview th:first-child,details.dataview td:first-child{text-align:left}
@@ -881,7 +907,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .depart{display:flex;align-items:center;gap:10px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
     color:var(--muted);margin-left:auto}
   .depart input{border:1px solid var(--border);background:var(--surface-1);color:var(--ink);
-    padding:6px 10px;font-family:var(--fd);font-size:15px;letter-spacing:0}
+    padding:6px 10px;font-family:var(--fd);font-size:16px;letter-spacing:0}
   ol.timeline{list-style:none;margin:0;padding:0}
   ol.timeline li{display:grid;grid-template-columns:70px 66px 1fr;gap:16px;align-items:baseline;
     padding:13px 0 13px 24px;border-left:1px solid var(--axis);position:relative;margin-left:5px;cursor:pointer}
@@ -995,6 +1021,44 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .colophon .kj{font-family:var(--fd);font-size:14px;color:var(--seal);letter-spacing:.14em}
   .colophon .tx{font-size:9.5px;letter-spacing:.19em;text-transform:uppercase;color:var(--muted)}
 
+  /* ---------- téléphone ---------- */
+  @media(max-width:680px){
+    .wrap{padding:26px 15px 64px}
+    header.top{flex-direction:column;gap:20px;align-items:stretch}
+    .seal{width:100%;display:flex;align-items:center;gap:16px}
+    .seal .box{width:92px;flex:0 0 auto}
+    .seal .cap{margin-top:0;text-align:left}
+    .theme-btn{width:auto;margin-top:0;margin-left:auto;padding:8px 12px;flex:0 0 auto}
+    h1{font-size:30px}
+    .badges{width:100%;border:0;gap:7px}
+    .badge{border:1px solid var(--rule)}
+    .controls{gap:22px 26px}
+    .kpis,.grid2,.eco{gap:14px}
+    .hero{font-size:42px}
+    .tile .val{font-size:30px}
+    .card,.chart-card,.tile{padding:18px 16px}
+    table.cmp th,table.cmp td{padding:8px 11px;font-size:12.5px}
+    table.cmp thead th{font-size:13px}
+    .tbl-scroll{-webkit-overflow-scrolling:touch}
+    .tbl-scroll::after{content:"→ faites défiler le tableau";display:block;font-size:10px;letter-spacing:.14em;
+      text-transform:uppercase;color:var(--muted);padding-top:10px}
+    .depart{margin-left:0;width:100%;flex-wrap:wrap;gap:8px}
+    .depart input{font-size:16px;flex:1 1 40%;min-width:0}
+    .tabs{gap:0}
+    .tabs button{flex:1 1 46%;font-size:12px;padding:9px 8px;border-right:1px solid var(--border)}
+    .maprow{font-size:9.5px;gap:8px 14px}
+    .switch{margin-left:0;width:100%}
+    .be-ctl{gap:12px}
+    .be-ctl output{font-size:20px;min-width:70px}
+    .check-grid{gap:0}
+    .summary-row{gap:8px 20px}
+    ol.timeline li{grid-template-columns:52px 52px 1fr;gap:8px;padding-left:18px}
+    .tl-t{font-size:15px}
+    .tl-main .nm{font-size:15px}
+    .trip-actions{gap:12px 16px}
+    .btn-primary{width:100%;text-align:center}
+    .swap{align-self:center;margin:0}
+  }
   @media print{
     body{background:#fff}
     .theme-btn,.tabs,.depart,.linkish,details.dataview,.switch{display:none!important}
@@ -1018,8 +1082,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <strong>46 bis rue Jeanne d'Arc</strong>, 10180 Saint-Lyé (Aube)
       </p>
       <div class="badges">
-        <span class="badge">585 → 622 km</span>
-        <span class="badge">Trois itinéraires comparés</span>
+        <span class="badge" id="badge-km">577 → 622 km</span>
+        <span class="badge" id="badge-n">Quatre itinéraires comparés</span>
         <span class="badge" id="badge-date">Fiche du 28 juillet 2026</span>
       </div>
     </div>
@@ -1281,7 +1345,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <h2><span class="kj">註記</span><span class="tx">Méthode &amp; sources</span></h2>
     <div class="card">
       <h3>Méthode &amp; incertitudes</h3>
-      <ul id="calcNote" hidden><li><b>Trajet calculé</b> — les distances, durées et tracés viennent du calculateur d'itinéraires en ligne ; les temps affichés sont ensuite recalculés avec le modèle de vitesses de cette fiche pour rester comparables. Le <b>péage est estimé</b> à 8,9 c/km de réseau concédé, moyenne classe 1 : comptez ± 25 % selon les sections. Les points de restauration ne sont renseignés que pour le trajet de référence ; les pauses sont placées automatiquement toutes les deux heures et nommées par la commune la plus proche.</li></ul>
+      <ul id="calcNote" hidden><li><b>Trajet calculé</b> — les distances, durées et tracés viennent du calculateur d'itinéraires en ligne ; les temps affichés sont ensuite recalculés avec le modèle de vitesses de cette fiche pour rester comparables. Le <b>péage est estimé</b> à 8,9 c/km de réseau concédé, moyenne classe 1 : comptez ± 25 % selon les sections. Les points de restauration ne sont renseignés que pour le trajet de référence ; les pauses sont placées automatiquement toutes les deux heures et nommées par la commune la plus proche. Durées brutes renvoyées par le calculateur, pour comparaison : <span id="calcRouter"></span>.</li></ul>
       <ul>
         <li><b>Distances et temps</b> — tracés calculés sur un moteur de routage cartographique (OSRM / OpenStreetMap) entre les adresses exactes, puis ventilés par tronçon avec des vitesses <em>moyennes</em> réelles — barrières, échangeurs et ralentissements compris, ce ne sont pas des vitesses de croisière : autoroute 120 km/h en rythme rapide (croisière 130) et 106 km/h en rythme sobre (croisière 110), voies rapides gratuites 93 km/h, francilienne 70 km/h, départementales 72 à 82 km/h selon la densité de traversées. Marge ± 3 %. Hors trafic et hors traversées urbaines aux heures de pointe.</li>
         <li><b>Consommations</b> — modèle pour une Saxo d'environ 1 000 kg. Essence (TU 1.1i / 1.4i) : 7,3 L/100 à 130 km/h, 5,9 à 110, 5,4 à 5,6 sur route. Diesel (TUD5 1.5 D, 57 ch) : 5,9 L/100 à 130 km/h (moteur en limite), 4,7 à 110, 4,3 à 4,5 sur route. Majorer de 5 à 10 % si le véhicule est chargé, climatisé en continu ou mal entretenu.</li>
@@ -1742,6 +1806,14 @@ function mk(tag,attrs={},parent){
   return e;
 }
 function clear(svg){ while(svg.firstChild) svg.removeChild(svg.firstChild); }
+// 1 unité SVG = 1 pixel réel : les libellés gardent leur taille sur téléphone
+function fitSVG(svg, hWide, hNarrow){
+  const w = Math.round(svg.getBoundingClientRect().width || svg.parentElement.clientWidth || 560);
+  const W = Math.max(300, w), narrow = W < 620;
+  const H = narrow ? hNarrow : hWide;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  return {W, H, narrow};
+}
 function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
 
 // rectangle horizontal, coins arrondis au choix (r sur le côté "right" ou "left")
@@ -1780,7 +1852,8 @@ function chartCost(){
   document.getElementById("costSub").textContent =
     `${T===2?"Aller-retour":"Aller simple"} · ${state.fuel==="essence"?"SP95":"gazole"} à ${nf(price(state.fuel),2)} €/L · rythme ${state.regime==="vite"?"rapide":"sobre"}`;
 
-  const W=560,H=250, m={t:14,r:66,b:34,l:100};
+  const {W,H,narrow} = fitSVG(svg, 250, 260);
+  const m={t:14, r:narrow?58:66, b:34, l:narrow?78:100};
   const pw=W-m.l-m.r, ph=H-m.t-m.b;
   const max = Math.max(...rows.map(r=>r.total*T))*1.02;
   const x = v => m.l + v/max*pw;
@@ -1796,9 +1869,9 @@ function chartCost(){
 
   rows.forEach((r,i)=>{
     const cy = m.t + band*i + band/2, y = cy - TH/2;
-    mk("text",{x:m.l-14,y:cy-3,"text-anchor":"end","font-size":15,fill:r.o.reco?css("--seal"):css("--ink"),"font-family":css("--fd")},svg)
+    mk("text",{x:m.l-12,y:cy-3,"text-anchor":"end","font-size":narrow?13.5:15,fill:r.o.reco?css("--seal"):css("--ink"),"font-family":css("--fd")},svg)
       .textContent = "Option "+r.o.id + (r.o.reco?" ✓":"");
-    mk("text",{x:m.l-14,y:cy+13,"text-anchor":"end","font-size":9.5,fill:css("--muted"),"letter-spacing":"1.2"},svg)
+    if(!narrow) mk("text",{x:m.l-12,y:cy+13,"text-anchor":"end","font-size":9.5,fill:css("--muted"),"letter-spacing":"1.2"},svg)
       .textContent = r.o.court.toUpperCase();
 
     const parts = [
@@ -1817,7 +1890,7 @@ function chartCost(){
       x0 += s.v/max*pw;
     });
     // libellé du total au bout de la barre
-    mk("text",{x:x(r.total*T)+9,y:cy+4,"font-size":15,fill:css("--ink"),"font-family":css("--fd")},svg).textContent = eur(r.total*T);
+    mk("text",{x:x(r.total*T)+9,y:cy+4,"font-size":narrow?13:15,fill:css("--ink"),"font-family":css("--fd")},svg).textContent = eur(r.total*T);
   });
 
   document.querySelector("#legCost .lg-wear").style.display = state.wear>0 ? "" : "none";
@@ -1837,7 +1910,8 @@ function chartTrade(){
   document.getElementById("tradeSub").textContent =
     "En bas à gauche = idéal. L'option recommandée est celle qui s'en approche le plus.";
 
-  const W=560,H=250,m={t:18,r:26,b:44,l:60};
+  const {W,H,narrow} = fitSVG(svg, 250, 250);
+  const m={t:18, r:narrow?18:26, b:44, l:narrow?48:60};
   const pw=W-m.l-m.r, ph=H-m.t-m.b;
   const hs = rows.map(r=>r.min*T/60), cs = rows.map(r=>r.total*T);
   const hMin=Math.floor(Math.min(...hs)*2)/2-0.5, hMax=Math.ceil(Math.max(...hs)*2)/2+0.5;
@@ -1902,7 +1976,8 @@ function chartSpeed(){
     ? `Coût du carburant seul, ${T===2?"aller-retour":"aller simple"}, sur les ${Math.round(kmAuto*T)} km d'autoroute de l'option ${o.id}. Le péage (${eur(o.peage*T)}) ne dépend pas de la vitesse.`
     : `L'option ${o.id} n'emprunte aucune autoroute : la vitesse de croisière n'a pas d'effet sur son coût.`;
 
-  const W=1060,H=300,m={t:20,r:118,b:46,l:66};
+  const {W,H,narrow} = fitSVG(svg, 300, 260);
+  const m={t:20, r:narrow?60:118, b:46, l:narrow?50:66};
   const pw=W-m.l-m.r, ph=H-m.t-m.b;
   const vs=[]; for(let v=90; v<=130; v+=2) vs.push(v);
   const series=[
@@ -1918,7 +1993,7 @@ function chartSpeed(){
     mk("text",{x:m.l-10,y:Y(v)+4,"text-anchor":"end","font-size":11,fill:css("--muted"),
                "font-variant-numeric":"tabular-nums"},svg).textContent=Math.round(v)+" €";
   });
-  [90,100,110,120,130].forEach(v=>{
+  (narrow?[90,110,130]:[90,100,110,120,130]).forEach(v=>{
     mk("line",{x1:X(v),x2:X(v),y1:m.t,y2:m.t+ph,stroke:css("--grid"),"stroke-width":1},svg);
     mk("text",{x:X(v),y:m.t+ph+19,"text-anchor":"middle","font-size":11,fill:css("--muted")},svg).textContent=v;
   });
@@ -1938,8 +2013,8 @@ function chartSpeed(){
     const last=s.pts[s.pts.length-1];
     mk("circle",{cx:X(last.v),cy:Y(last.y),r:6.5,fill:css("--surface-1")},svg);
     mk("circle",{cx:X(last.v),cy:Y(last.y),r:4.5,fill:s.col},svg);
-    mk("text",{x:X(last.v)+12,y:Y(last.y)+5,"font-size":14.5,fill:css("--ink"),"font-family":css("--fd")},svg)
-      .textContent=`${s.nm} — ${eur(last.y)}`;
+    mk("text",{x:X(last.v)+11,y:Y(last.y)+5,"font-size":narrow?12.5:14.5,fill:css("--ink"),"font-family":css("--fd")},svg)
+      .textContent = narrow ? eur(last.y) : `${s.nm} — ${eur(last.y)}`;
   });
 
   // crosshair + tooltip
@@ -2003,7 +2078,8 @@ function chartBE(){
   const order=[...rows].sort((a,b)=>b.t-a.t).map(r=>r.id);
   const ramp={}; order.forEach((id,i)=>ramp[id]=css("--o"+(i+1)));
 
-  const W=1060,H=122,m={t:26,r:16,b:44,l:16};
+  const {W,H,narrow} = fitSVG(svg, 122, 132);
+  const m={t:26, r:16, b:narrow?54:44, l:16};
   const pw=W-m.l-m.r, TH=26, y=m.t;
   const X=v=>m.l+v/BE_MAX*pw, GAP=2;
 
@@ -2018,14 +2094,14 @@ function chartBE(){
       `Coût ${eur(r.c)} · ${hm(r.t*60)} de conduite`));
     seg.addEventListener("mouseleave",()=>tipHide(tip));
     // libellé dans la zone si la place le permet, sinon au-dessus
-    const lab="Option "+z.id, approx=lab.length*7.6;
+    const lab = narrow ? z.id : "Option "+z.id, approx = lab.length*(narrow?9:7.6);
     if(w>approx+22){
       mk("text",{x:x0+w/2,y:y+TH/2+5,"text-anchor":"middle","font-size":13.5,
         fill:"#faf8f2","font-family":css("--fd")},svg).textContent=lab;
     }
   });
   // graduations
-  [0,10,20,30,40,50,60].forEach(v=>{
+  (narrow?[0,20,40,60]:[0,10,20,30,40,50,60]).forEach(v=>{
     mk("line",{x1:X(v),x2:X(v),y1:y+TH+4,y2:y+TH+9,stroke:css("--axis"),"stroke-width":1},svg);
     mk("text",{x:X(v),y:y+TH+24,"text-anchor":v===BE_MAX?"end":"middle","font-size":11,fill:css("--muted")},svg)
       .textContent = v===BE_MAX ? "60 +" : String(v);
@@ -2372,22 +2448,26 @@ const simplify = (pts,max) => pts.length<=max ? pts
 /* --- Valhalla --- */
 async function routeValhalla(from,to,opts){
   const body={locations:[{lat:from.lat,lon:from.lon},{lat:to.lat,lon:to.lon}],
-    costing:"auto", costing_options:{auto:opts},
+    costing:"auto", costing_options:{auto:Object.assign({use_ferry:0.1},opts)},
     directions_options:{units:"kilometers"}, shape_format:"polyline6"};
   const r=await fetch("https://valhalla1.openstreetmap.de/route?json="+encodeURIComponent(JSON.stringify(body)));
   if(!r.ok) throw new Error("valhalla "+r.status);
   const j=await r.json();
   if(!j.trip || !j.trip.legs || !j.trip.legs.length) throw new Error("valhalla vide");
-  const leg=j.trip.legs[0];
+  const leg=j.trip.legs[0], sum=j.trip.summary;
   const shape=decodePolyline(leg.shape,6);
-  const buckets={auto:0, rapide:0, route:0}; let tollKm=0;
+  const buckets={auto:0, rapide:0, route:0}; let tollKm=0, marked=false;
   (leg.maneuvers||[]).forEach(m=>{
     const km=m.length||0, hrs=(m.time||1)/3600, v=hrs>0?km/hrs:0;
     const t = m.highway ? "auto" : (v>=85 ? "rapide" : "route");
     buckets[t]+=km;
-    if(m.toll) tollKm+=km;
+    if(m.toll){ tollKm+=km; marked=true; }
   });
-  return {km:j.trip.summary.length, sec:j.trip.summary.time, shape, buckets, tollKm, src:"Valhalla"};
+  // le calculateur signale un péage mais n'a marqué aucune manœuvre : on estime
+  if(sum.has_toll && !marked) tollKm = buckets.auto*0.6;
+  if(sum.has_toll === false) tollKm = 0;
+  return {km:sum.length, sec:sum.time, shape, buckets, tollKm,
+          hasToll:!!sum.has_toll, src:"Valhalla"};
 }
 /* --- OSRM (repli) --- */
 async function routeOSRM(from,to,altIndex){
@@ -2408,11 +2488,11 @@ async function routeOSRM(from,to,altIndex){
   });
   if(!buckets.auto && !buckets.rapide && !buckets.route) buckets.route = rt.distance/1000;
   return {km:rt.distance/1000, sec:rt.duration, shape, buckets, tollKm:buckets.auto*0.85,
-          src:"OSRM", nAlt:j.routes.length};
+          hasToll:buckets.auto>1, tollGuess:true, src:"OSRM", nAlt:j.routes.length};
 }
 
 /* --- conversion en option exploitable par tout le tableau de bord --- */
-function buildOption(id, nom, court, sub, r, tollFree){
+function buildOption(id, nom, court, sub, r, wantFree){
   const b=r.buckets, tot=(b.auto+b.rapide+b.route)||r.km;
   const k=r.km/tot;                                  // recale les buckets sur la distance réelle
   const segs=[];
@@ -2420,11 +2500,27 @@ function buildOption(id, nom, court, sub, r, tollFree){
   if(b.rapide>0.5) segs.push(SEG("Voie rapide",          +(b.rapide*k).toFixed(1),"rapide"));
   if(b.route>0.5)  segs.push(SEG("Routes et traversées", +(b.route*k).toFixed(1), "route"));
   if(!segs.length) segs.push(SEG("Itinéraire", +r.km.toFixed(1), "route"));
-  const peage = tollFree ? 0 : +(r.tollKm*k*TOLL_PER_KM).toFixed(2);
-  const o={id, nom, court, sub, peage, vRoute:76, segs,
-    peageDetail: tollFree ? "Aucun péage (itinéraire calculé sans péage)"
-      : `Estimation : ${Math.round(r.tollKm*k)} km de réseau concédé × ${nf(TOLL_PER_KM*100,1)} c/km`,
-    calc:{routerKm:r.km, routerMin:r.sec/60, src:r.src}};
+
+  // péage réellement constaté sur le tracé rendu — jamais forcé à zéro
+  const tollKm = Math.max(0, r.tollKm*k);
+  const peage  = tollKm < 1.5 ? 0 : +(tollKm*TOLL_PER_KM).toFixed(2);
+  const o={id, nom, court, peage, vRoute:76, segs,
+    sub: sub + (wantFree && peage>0
+      ? " — le calculateur n'a pas pu éviter la totalité du péage" : ""),
+    peageDetail: peage===0 ? "Aucun péage sur ce tracé"
+      : `${r.tollGuess?"Estimation large" : "Estimation"} : ${Math.round(tollKm)} km de réseau à péage × ${nf(TOLL_PER_KM*100,1)} c/km`
+        + (wantFree ? " — péage résiduel malgré la consigne d'évitement" : ""),
+    calc:{routerKm:r.km, routerMin:r.sec/60, src:r.src, tollGuess:!!r.tollGuess}};
+
+  // cale la vitesse des portions « route » pour que le temps du modèle
+  // colle à la durée annoncée par le calculateur (rythme sobre)
+  const routerMin = r.sec/60;
+  const fixed = segs.filter(s=>s.type!=="route")
+                    .reduce((a,s)=>a+s.km/speedOf(o,s.type,"sobre")*60, 0);
+  const kmRoute = segs.filter(s=>s.type==="route").reduce((a,s)=>a+s.km,0);
+  if(kmRoute>1 && routerMin-fixed>1)
+    o.vRoute = Math.min(100, Math.max(45, kmRoute/((routerMin-fixed)/60)));
+
   o.wp = makeWaypoints(o, r.shape);
   return o;
 }
@@ -2495,8 +2591,9 @@ async function computeTrip(){
     if(!r) continue;
     src=r.src;
     const o=buildOption(s.id,s.nom,s.court,s.sub,r,!!s.free);
-    // écarte un doublon (même distance à 1,5 % près qu'une option déjà retenue)
-    if(opts.some(p=>Math.abs(p.segs.reduce((a,x)=>a+x.km,0)-o.segs.reduce((a,x)=>a+x.km,0)) < o.segs.reduce((a,x)=>a+x.km,0)*0.015)) continue;
+    o._km=r.km; o._min=r.sec/60;
+    // écarte un doublon : même distance à 1 % près ET même durée à 2 % près
+    if(opts.some(q=>Math.abs(q._km-o._km) < o._km*0.01 && Math.abs(q._min-o._min) < o._min*0.02)) continue;
     opts.push(o); tracks[s.id]=simplify(r.shape,400);
   }
   // un itinéraire à la fois plus lent et plus cher qu'un autre n'apporte rien : on l'écarte
@@ -2513,10 +2610,19 @@ async function computeTrip(){
     shortName(PT.from.label).split(",")[0] + " → " + shortName(PT.to.label).split(",")[0];
   document.querySelector(".route-line").innerHTML =
     `<strong>${shortName(PT.from.label)}</strong> → <strong>${shortName(PT.to.label)}</strong>`;
+  const warn = src==="OSRM"
+    ? " Repli sur OSRM : l'évitement du péage n'est pas garanti et le montant est une borne haute."
+    : "";
   tripSay(`${opts.length} itinéraire${opts.length>1?"s":""} calculé${opts.length>1?"s":""} via ${src}. `+
-          `Péages estimés à ${nf(TOLL_PER_KM*100,1)} c/km de réseau concédé.`);
+          `Péages estimés à ${nf(TOLL_PER_KM*100,1)} c/km de réseau à péage.` + warn, src==="OSRM");
   document.getElementById("badge-date").textContent = "Trajet calculé";
+  document.getElementById("badge-n").textContent = opts.length+" itinéraire"+(opts.length>1?"s":"")+" calculé"+(opts.length>1?"s":"");
+  document.getElementById("badge-km").textContent =
+    Math.round(Math.min(...opts.map(o=>o.segs.reduce((a,s)=>a+s.km,0)))) + " → " +
+    Math.round(Math.max(...opts.map(o=>o.segs.reduce((a,s)=>a+s.km,0)))) + " km";
   document.getElementById("calcNote").hidden = false;
+  document.getElementById("calcRouter").textContent =
+    opts.map(o=>`option ${o.id} : ${Math.round(o.calc.routerKm)} km en ${hm(o.calc.routerMin)}`).join(" · ");
   afterOptionsChange(true);
   opts.forEach(queueNames);
 }
@@ -2526,6 +2632,8 @@ function useReference(){
   document.querySelector(".route-line").innerHTML =
     `<strong>57 bis rue Michel-Ange</strong>, 44600 Saint-Nazaire → <strong>46 bis rue Jeanne d'Arc</strong>, 10180 Saint-Lyé (Aube)`;
   document.getElementById("badge-date").textContent="Fiche du 28 juillet 2026";
+  document.getElementById("badge-n").textContent="Quatre itinéraires comparés";
+  document.getElementById("badge-km").textContent="577 → 622 km";
   document.getElementById("calcNote").hidden = true;
   tripSay("");
   afterOptionsChange(true);
@@ -2697,7 +2805,11 @@ document.getElementById("themeBtn").addEventListener("click",()=>{
 });
 function afterTheme(){ if(mapReady) renderMap(false); else if(fallbackMap.redraw) fallbackMap.redraw(); }
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{ drawCharts(); afterTheme(); });
-window.addEventListener("resize",()=>{ /* svg is viewBox-scaled; rien à refaire */ });
+let rzT=null;
+window.addEventListener("resize",()=>{
+  clearTimeout(rzT);
+  rzT=setTimeout(()=>{ drawCharts(); if(mapReady) MAP.invalidateSize(); }, 200);
+});
 
 /* =========================================================================
    BOOT
@@ -2710,6 +2822,8 @@ renderChecklist();
   state.date = `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`;
   document.getElementById("departDate").value = state.date;
 })();
+if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost"))
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 renderTabs();
 setWear(true);
 const restored = loadHash();
