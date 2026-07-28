@@ -71,4 +71,4 @@ Remplacez `index.html` et poussez. Le `sw.js` sert la version en cache puis réc
 
 ## Vie privée
 
-Aucun compte, aucun cookie, aucune mesure d'audience. Le domicile que vous saisissez est stocké dans l'adresse de la page, nulle part ailleurs. Trois services externes sont appelés, et uniquement si vous les sollicitez : OpenStreetMap pour le fond de carte, Nominatim pour les adresses, Open-Meteo pour la météo.
+Aucun compte, aucun cookie, aucune mesure d'audience. Le domicile et vos réglages sont enregistrés dans le stockage local de votre navigateur — ils ne quittent jamais l'appareil, et le bouton « Oublier » les efface. Ils sont aussi repris dans l'adresse de la page, ce qui permet de transférer la configuration vers un autre téléphone en copiant le lien. Si le navigateur refuse le stockage local (navigation privée sur Safari, par exemple), la page le signale et le lien prend le relais. Trois services externes sont appelés, et uniquement si vous les sollicitez : OpenStreetMap pour le fond de carte, Nominatim pour les adresses, Open-Meteo pour la météo.

@@ -982,6 +982,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #tripStatus{font-size:12px;color:var(--muted)}
   #tripStatus.err{color:var(--seal)}
   .trip-note{font-size:11.5px;color:var(--muted);margin:14px 0 0}
+  #saveState:empty{display:none}
+  #saveState b{color:var(--ink-2);font-weight:600}
+  #saveState button{background:none;border:0;padding:0 0 1px;margin-left:10px;cursor:pointer;
+    font-family:var(--fu);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--muted);border-bottom:1px solid var(--border)}
+  #saveState button:hover{color:var(--seal);border-color:var(--seal)}
   .home-btn{background:none;border:0;padding:0;font-family:var(--fu);font-size:10px;letter-spacing:.13em;
     text-transform:uppercase;color:var(--muted);cursor:pointer;text-align:left;border-bottom:1px solid var(--border);
     align-self:flex-start;padding-bottom:2px}
@@ -1121,7 +1127,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <button class="linkish" id="btnRef" type="button">Trajet de référence — Saint-Nazaire → Saint-Lyé</button>
         <span id="tripStatus"></span>
       </div>
-      <p class="trip-note">Le domicile est mémorisé dans l'adresse de la page : copiez le lien et remettez-le en favori, il reviendra pré-rempli. Adresses géocodées par Nominatim, itinéraires calculés par Valhalla (avec repli sur OSRM) — ces trois fonctions demandent une connexion.</p>
+      <p class="trip-note" id="saveState"></p>
+      <p class="trip-note">Le domicile est enregistré sur cet appareil, et repris dans l'adresse de la page : copiez le lien pour le transférer sur un autre téléphone. Adresses géocodées par Nominatim, itinéraires calculés par Valhalla (avec repli sur OSRM) — ces trois fonctions demandent une connexion.</p>
     </div>
   </section>
 
@@ -2686,7 +2693,71 @@ function autocomplete(inputId, listId, onPick){
   inp.addEventListener("blur",()=>setTimeout(close,180));
 }
 
-/* --- mémorisation dans l'adresse de la page --- */
+/* --- stockage local, avec repli mémoire si le navigateur le refuse --- */
+const KEY="itineraire-saxo:v1";
+const store=(()=>{
+  let ok=false;
+  try{ localStorage.setItem(KEY+":t","1"); localStorage.removeItem(KEY+":t"); ok=true; }catch(e){ ok=false; }
+  const mem={};
+  return {
+    ok,
+    read(){ try{ return JSON.parse((ok?localStorage.getItem(KEY):mem[KEY])||"null"); }catch(e){ return null; } },
+    write(v){ try{ const s=JSON.stringify(v); ok?localStorage.setItem(KEY,s):(mem[KEY]=s); }catch(e){} },
+    clear(){ try{ ok?localStorage.removeItem(KEY):delete mem[KEY]; }catch(e){} }
+  };
+})();
+let booted=false;
+function persist(){
+  if(!booted) return;
+  store.write({
+    home: state.home || "", homeLL: state.homeLL || null,
+    from: PT.from || null, to: PT.to || null,
+    fuel:state.fuel, regime:state.regime, trip:state.trip, pax:state.pax,
+    pE:state.pE, pD:state.pD, wearOn:state.wearOn, wearRate:state.wearRate,
+    hourly:state.hourly, depart:state.depart
+  });
+  saveHash();
+  saveState();
+}
+function saveState(){
+  const el=document.getElementById("saveState"); if(!el) return;
+  if(!store.ok){
+    el.innerHTML="Ce navigateur refuse l'enregistrement local — utilisez le bouton « copier le lien » pour conserver votre domicile.";
+    return;
+  }
+  const d=store.read();
+  el.innerHTML = (d && d.home)
+    ? `Domicile enregistré sur cet appareil : <b>${d.home}</b>. Vos réglages de carburant, d'usure et de valeur horaire le sont aussi.<button type="button" id="btnForget">Oublier</button>`
+    : "";
+  const f=document.getElementById("btnForget");
+  if(f) f.addEventListener("click",()=>{
+    store.clear(); state.home=""; state.homeLL=null;
+    document.getElementById("inHome").value="";
+    history.replaceState(null,"",location.pathname);
+    saveState(); tripSay("Domicile oublié sur cet appareil.");
+  });
+}
+function restore(){
+  const d=store.read(); if(!d) return false;
+  if(d.home){ state.home=d.home; state.homeLL=d.homeLL; document.getElementById("inHome").value=d.home; }
+  if(d.from){ PT.from=d.from; document.getElementById("inFrom").value=d.from.label||""; }
+  if(d.to){   PT.to=d.to;     document.getElementById("inTo").value=d.to.label||""; }
+  ["fuel","regime","depart"].forEach(k=>{ if(d[k]!=null) state[k]=d[k]; });
+  ["trip","pax","pE","pD","wearRate","hourly"].forEach(k=>{ if(typeof d[k]==="number") state[k]=d[k]; });
+  if(typeof d.wearOn==="boolean") state.wearOn=d.wearOn;
+  // remet l'interface en accord avec l'état restauré
+  const seg=(id,v)=>document.querySelectorAll(`#${id} button`).forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.v===String(v))));
+  seg("segFuel",state.fuel); seg("segReg",state.regime); seg("segTrip",state.trip); seg("segPax",state.pax);
+  document.getElementById("pE").value=state.pE;
+  document.getElementById("pD").value=state.pD;
+  document.getElementById("pW").value=state.wearRate;
+  document.getElementById("beRange").value=state.hourly;
+  document.getElementById("beOut").textContent=state.hourly+" €/h";
+  document.getElementById("departTime").value=state.depart;
+  return !!(d.from&&d.to);
+}
+
+/* --- mémorisation dans l'adresse de la page (partage entre appareils) --- */
 function saveHash(){
   const d={};
   if(state.homeLL) d.h=[state.home, state.homeLL.lat, state.homeLL.lon];
@@ -2742,7 +2813,7 @@ document.getElementById("segWear").addEventListener("click",e=>{
 document.getElementById("beRange").addEventListener("input",e=>{
   state.hourly = +e.target.value;
   document.getElementById("beOut").textContent = state.hourly+" €/h";
-  chartBE();
+  chartBE(); persist();
 });
 document.getElementById("departDate").addEventListener("change",e=>{
   state.date = e.target.value; loadWeather();
@@ -2766,28 +2837,28 @@ document.getElementById("togFood").addEventListener("change",()=>{ if(mapReady) 
 document.getElementById("timeline").addEventListener("click",e=>{
   const li=e.target.closest("li[data-i]"); if(li) focusStep(+li.dataset.i);
 });
-document.getElementById("departTime").addEventListener("input",e=>{ state.depart=e.target.value||"06:45"; renderRoadmap(); });
+document.getElementById("departTime").addEventListener("input",e=>{ state.depart=e.target.value||"06:45"; renderRoadmap(); persist(); });
 document.getElementById("chkReset").addEventListener("click",()=>{
   document.querySelectorAll("#checklist input").forEach(i=>{ i.checked=false; i.closest(".chk").classList.remove("done"); });
   updateMeter();
 });
 
 // panneau trajet
-autocomplete("inFrom","sgFrom", r=>{ PT.from=r; saveHash(); });
-autocomplete("inTo","sgTo",     r=>{ PT.to=r;   saveHash(); });
-autocomplete("inHome","sgHome", r=>{ if(r){ state.home=shortName(r.label); state.homeLL=r; saveHash(); } });
+autocomplete("inFrom","sgFrom", r=>{ PT.from=r; persist(); });
+autocomplete("inTo","sgTo",     r=>{ PT.to=r;   persist(); });
+autocomplete("inHome","sgHome", r=>{ if(r){ state.home=shortName(r.label); state.homeLL={...r,label:shortName(r.label)}; persist(); } });
 document.getElementById("btnSwap").addEventListener("click",()=>{
   const a=document.getElementById("inFrom"), b=document.getElementById("inTo");
-  [a.value,b.value]=[b.value,a.value]; [PT.from,PT.to]=[PT.to,PT.from]; saveHash();
+  [a.value,b.value]=[b.value,a.value]; [PT.from,PT.to]=[PT.to,PT.from]; persist();
 });
 document.querySelectorAll("[data-fill]").forEach(btn=>btn.addEventListener("click",()=>{
   if(!state.homeLL){ tripSay("Renseignez d'abord une adresse dans le champ Domicile.", true); return; }
   const which=btn.dataset.fill;
   document.getElementById(which==="from"?"inFrom":"inTo").value = state.home;
-  PT[which]={...state.homeLL, label:state.home}; saveHash(); tripSay("");
+  PT[which]={...state.homeLL, label:state.home}; persist(); tripSay("");
 }));
 document.getElementById("btnCopyLink").addEventListener("click",async ()=>{
-  saveHash();
+  persist();
   try{ await navigator.clipboard.writeText(location.href); tripSay("Lien copié — remettez-le en favori."); }
   catch(e){ tripSay("Copie impossible : sélectionnez l'adresse de la page à la main."); }
 });
@@ -2815,7 +2886,7 @@ window.addEventListener("resize",()=>{
    BOOT
    ========================================================================= */
 function drawCharts(){ chartCost(); chartTrade(); chartSpeed(); chartBE(); }
-function renderAll(){ renderKPI(); renderTable(); drawCharts(); renderRoadmap(); }
+function renderAll(){ renderKPI(); renderTable(); drawCharts(); renderRoadmap(); persist(); }
 renderChecklist();
 (()=>{ // date de départ par défaut : aujourd'hui, dans le fuseau du navigateur
   const d=new Date(), z=n=>String(n).padStart(2,"0");
@@ -2825,13 +2896,18 @@ renderChecklist();
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost"))
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 renderTabs();
-setWear(true);
-const restored = loadHash();
+const hadSaved = restore();
+setWear(state.wearOn);
+const hadLink  = loadHash();          // un lien partagé prime sur l'enregistrement local
+booted = true;
+saveState();
+const restored = hadLink || hadSaved;
 renderAll();
 loadMap();
 loadWeather();
 if(restored){
-  tripSay("Trajet restauré depuis le lien — appuyez sur « Calculer les itinéraires ».");
+  tripSay(hadLink ? "Trajet restauré depuis le lien — appuyez sur « Calculer les itinéraires »."
+                  : "Trajet restauré depuis cet appareil — appuyez sur « Calculer les itinéraires ».");
   document.getElementById("secTrip").scrollIntoView({behavior:"smooth",block:"start"});
 }
 })();
